@@ -1,0 +1,73 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="325" d:DesignHeight="145"
+        Width="325" Height="145"
+        x:Class="Scans_Mover.Views.FileRenameView"
+        Title="Rename File"
+        KeyboardNavigation.TabNavigation="Continue"
+        WindowStartupLocation="CenterOwner">
+
+  <Grid Margin="3 3 3 3"
+        RowDefinitions="auto,auto,auto,auto"
+        ColumnDefinitions="auto,auto,auto,auto"
+        VerticalAlignment="Center">
+    
+    <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="4"
+               Margin="2 2 2 2"
+               HorizontalAlignment="Center"
+               Text="Please enter the correct title."/>
+    
+    <TextBlock Grid.Row="1" Grid.Column="0"
+               VerticalAlignment="Center"
+               Text="{Binding TypeText}"/>
+    
+    <TextBox Grid.Row="1" Grid.Column="1"
+             HorizontalAlignment="Left"
+             Watermark="{Binding Watermark}"
+             Text="{Binding NewFileName}"
+             Focusable="True"
+             TabIndex="0"
+             x:Name="tbxFileName"/>
+
+    <TextBlock Grid.Row="1" Grid.Column="2"
+               Margin="0 0 5 0"
+               Text="Call"
+               HorizontalAlignment="Right"
+               VerticalAlignment="Center"
+               IsVisible="{Binding IsService}"/>
+
+    <TextBox Grid.Row="1" Grid.Column="3"
+                   Focusable="True"
+                   TabIndex="1"
+                   IsVisible="{Binding IsService}"
+                   Text="{Binding CallNum}"/>
+    
+    <TextBlock Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="4"
+               FontStyle="Italic"
+               FontWeight="Light"
+               Text="{Binding ExampleText}"/>
+    
+    <Button Grid.Row="3" Grid.Column="0" Content="Rename"
+            Command="{Binding RenameCommand}"
+            Margin="2 2 2 2"
+            HorizontalAlignment="Left"
+            TabIndex="2"
+            IsDefault="True"/>
+    
+      <Button Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2"
+              Content="Skip" 
+              Command="{Binding SkipCommand}" 
+              Margin="2 2 2 2"
+              HorizontalAlignment="Center"
+              TabIndex="3"/>
+
+    <Button Grid.Row="3" Grid.Column="3" Content="Cancel"
+              Command="{Binding CancelCommand}"
+              Margin="2 2 2 2"
+              HorizontalAlignment="Right"
+              TabIndex="4"/>
+    
+  </Grid>
+</Window>

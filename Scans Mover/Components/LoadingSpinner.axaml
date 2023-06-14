@@ -1,0 +1,46 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:Scans_Mover.Components"
+        xmlns:local="clr-namespace:Scans_Mover.Converters">
+
+  <Design.PreviewWith>
+    <Border Padding="20">
+      <controls:LoadingSpinner/>
+    </Border>
+  </Design.PreviewWith>
+  
+  <Style Selector="controls|LoadingSpinner">
+    <Style.Resources>
+      <local:DiameterAndThicknessToStrokeDashArrayConverter x:Key="DiameterAndThicknessToStrokeDashArrayConverter" />
+    </Style.Resources>
+    <!-- Set Defaults -->
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Ellipse
+            Width="{TemplateBinding Diameter}"
+            Height="{TemplateBinding Diameter}"
+            Stroke="{TemplateBinding Color}"
+            StrokeThickness="{TemplateBinding Thickness}"
+            IsVisible="{TemplateBinding IsLoading}">
+          <Ellipse.StrokeDashArray>
+            <MultiBinding Converter="{StaticResource DiameterAndThicknessToStrokeDashArrayConverter}">
+              <Binding Path="Diameter" RelativeSource="{RelativeSource TemplatedParent}"/>
+              <Binding Path="Thickness" RelativeSource="{RelativeSource TemplatedParent}"/>
+            </MultiBinding>
+          </Ellipse.StrokeDashArray>
+        </Ellipse>
+      </ControlTemplate>
+    </Setter>
+    <Style.Animations>
+      <Animation Duration="0:0:1" IterationCount="INFINITE">
+        <KeyFrame Cue="0%">
+          <Setter Property="RotateTransform.Angle" Value="0.0"/>
+        </KeyFrame>
+        <KeyFrame Cue="100%">
+          <Setter Property="RotateTransform.Angle" Value="360.0"/>
+        </KeyFrame>
+      </Animation>
+    </Style.Animations>
+  </Style>
+
+</Styles>
