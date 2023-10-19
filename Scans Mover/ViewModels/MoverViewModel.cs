@@ -48,7 +48,7 @@ namespace Scans_Mover.ViewModels
         [ObservableProperty]
         public double _tolerance = 75;
         [ObservableProperty]
-        public double _documentMinimum = 0;
+        public double _documentMinimum = 1;
         [ObservableProperty]
         private ScanType _selectedScanType = ScanType.Shipping;
         [ObservableProperty]
@@ -217,6 +217,14 @@ namespace Scans_Mover.ViewModels
             {
                 UpdateProperties();
             }
+            else
+            {
+                SelectedScanType = ScanType.Delivery;
+                ChangeHasDate();
+                ChangeHasMinimum();
+            }
+
+            Busy = false;
         }
 
         /// <summary>
@@ -237,7 +245,7 @@ namespace Scans_Mover.ViewModels
         public async void OnWindowClosing(object? sender, CancelEventArgs e)
         {
             _theMessenger.UnregisterAll(this);
-            UpdateSettingsFolders();
+            UpdateSettings();
             await SaveSettingsAsync();
         }
 
@@ -420,13 +428,14 @@ namespace Scans_Mover.ViewModels
         /// <summary>
         /// Updates the folders on the Settings object to be what is current on the folder properties on the view model.
         /// </summary>
-        private void UpdateSettingsFolders()
+        private void UpdateSettings()
         {
             Settings.MainFolder = MainFolder;
             Settings.DeliveriesFolder = DeliveriesFolder;
             Settings.RMAsFolder = RMAsFolder;
             Settings.ShippingLogsFolder = ShippingLogsFolder;
             Settings.ServiceFolder = ServiceFolder;
+            Settings.Tolerance = Tolerance;
         }
         /// <summary>
         /// Updates all observable properties.
