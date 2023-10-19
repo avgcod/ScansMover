@@ -1,4 +1,6 @@
-﻿using Scans_Mover.Models;
+﻿using Avalonia.Controls;
+using Avalonia.Platform.Storage;
+using Scans_Mover.Models;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -63,8 +65,9 @@ namespace Scans_Mover.Services
             {
                 try
                 {
-                    string jsonString = await File.ReadAllTextAsync(fileName);
-                    newSettings = JsonSerializer.Deserialize<Settings>(jsonString) ?? new Settings();
+                    Stream theStream = File.OpenRead(fileName);
+                    newSettings = await JsonSerializer.DeserializeAsync<Settings>(theStream) ?? new Settings();
+                    theStream.Close();
                 }
                 catch (Exception ex)
                 {
@@ -166,15 +169,15 @@ namespace Scans_Mover.Services
         /// <param name="fileName">Text file to save to.</param>
         /// <returns>If the operation succeeded.</returns>
         /// <exception cref="Exception"></exception>
-        public static async Task<bool> SaveLogAsync(List<string> information, string fileName)
+        public static async Task<bool> SaveLogAsync(IEnumerable<string> information, string fileName)
         {
             try
             {
                 using (TextWriter writer = new StreamWriter(fileName))
                 {
-                    for (int i = 0; i < information.Count; i++)
+                    foreach (string theInfo in information)
                     {
-                        await writer.WriteLineAsync(information[i]);
+                        await writer.WriteLineAsync(theInfo);
                     }
                 }
                 
@@ -243,7 +246,7 @@ namespace Scans_Mover.Services
         /// </summary>
         /// <param name="rootDirectory">Root directory to search.</param>
         /// <returns>List of subdirectory names found.</returns>
-        public static List<string> GetSubDirectories(string rootDirectory)
+        public static IEnumerable<string> GetSubDirectories(string rootDirectory)
         {
             return new DirectoryInfo(rootDirectory).EnumerateDirectories().Select(x => x.Name).ToList();
         }
@@ -253,7 +256,7 @@ namespace Scans_Mover.Services
         /// </summary>
         /// <param name="rootDirectory">Root directory to search.</param>
         /// <returns>List of subdirectory names found.</returns>
-        public static async Task<List<string>> GetSubDirectoriesAsync(string rootDirectory)
+        public static async Task<IEnumerable<string>> GetSubDirectoriesAsync(string rootDirectory)
         {
             return await Task.Run(() => new DirectoryInfo(rootDirectory).EnumerateDirectories().Select(x => x.Name).ToList());
         }
@@ -273,7 +276,7 @@ namespace Scans_Mover.Services
         /// </summary>
         /// <param name="rootDirectory">Root directory to search.</param>
         /// <returns>List of files found.</returns>
-        public static async Task<List<FileInfo>> GetFilesAsync(string rootDirectory)
+        public static async Task<IEnumerable<FileInfo>> GetFilesAsync(string rootDirectory)
         {
             return await Task.Run(() => new DirectoryInfo(rootDirectory).GetFiles().ToList());
         }
@@ -480,6 +483,22 @@ namespace Scans_Mover.Services
                     await theProcess?.WaitForExitAsync();
                 }
             }
+        }
+
+        /// <summary>
+        /// Opens a folder chooser dialog for the user to select the desired folder.
+        /// </summary>
+        /// <param name="_currentWindow">The current window.</param>
+        /// <returns>The selected folder.</returns>
+        public static async Task<IStorageFolder?> ChooseLocationAsync(Window _currentWindow)
+        {
+            var folders = await _currentWindow.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions()
+            {
+                Title = "Select Destination Folder",
+                AllowMultiple = false
+            });
+
+            return folders.Count >= 1 ? folders[0] : null;
         }
     }
 }

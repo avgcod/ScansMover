@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Windows.Input;
-using ReactiveUI;
 
 namespace Scans_Mover.Commands
 {

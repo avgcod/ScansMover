@@ -18,7 +18,7 @@
         public int POsPagesPerDocument { get; set; } = 1;
         public int ServicePagesPerDocument { get; set; } = 1;
         public double Tolerance { get; set; } = 75;
-        public double DeliveriesMinimum { get; set; } = 3047000;
-        public double RMAsMinimum { get; set; } = 20100;
+        public double DeliveriesMinimum { get; set; } = 3065800;
+        public double RMAsMinimum { get; set; } = 21000;
     }
 }

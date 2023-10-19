@@ -3,13 +3,14 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="325" d:DesignHeight="145"
+        MinWidth="325" MinHeight="145"
         Width="325" Height="145"
         x:Class="Scans_Mover.Views.FileRenameView"
         Title="Rename File"
         KeyboardNavigation.TabNavigation="Continue"
         WindowStartupLocation="CenterOwner">
 
-  <Grid Margin="3 3 3 3"
+  <Grid Margin="3"
         RowDefinitions="auto,auto,auto,auto"
         ColumnDefinitions="auto,auto,auto,auto"
         VerticalAlignment="Center">
@@ -17,7 +18,7 @@
     <TextBlock Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="4"
                Margin="2 2 2 2"
                HorizontalAlignment="Center"
-               Text="Please enter the correct title."/>
+               Text="Please provide the naming information."/>
     
     <TextBlock Grid.Row="1" Grid.Column="0"
                VerticalAlignment="Center"

@@ -1,166 +1,69 @@
 ﻿using Scans_Mover.Models;
 using System;
-using ReactiveUI;
 using Scans_Mover.Services;
-using System.Windows.Input;
-using Scans_Mover.Commands;
 using Avalonia.Controls;
 using System.ComponentModel;
-using System.Data.Common;
+using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Messaging;
 
 namespace Scans_Mover.ViewModels
 {
-    public class FileRenameViewModel : ViewModelBase
+    public partial class FileRenameViewModel : ViewModelBase
     {
         #region Variables
         private readonly Window _currentWindow;
         private readonly string _fileName;
+        private IMessenger _theMessenger;
         #endregion
 
         #region Properties
+
+        [ObservableProperty]
         private string _fileInfo = string.Empty;
-        public string FileInfo
-        {
-            get
-            {
-                return _fileInfo;
-            }
-            set
-            {
-                this.RaiseAndSetIfChanged(ref _fileInfo, value);
-            }
-        }
 
-        private string _prefixText = string.Empty;
+        private readonly string _prefixText = string.Empty;
 
+        [ObservableProperty]
         private string _typeText = "Delivery";
-        public string TypeText
-        {
-            get
-            {
-                return _typeText;
-            }
-            set
-            {
-                this.RaiseAndSetIfChanged(ref _typeText, value);
-            }
-        }
 
+        [ObservableProperty]
         private string _exampleText = string.Empty;
-        public string ExampleText
-        {
-            get
-            {
-                return _exampleText;
-            }
-            set
-            {
-                this.RaiseAndSetIfChanged(ref _exampleText, value);
-            }
-        }
 
+        [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(RenameCommand))]
         private string _newFileName = string.Empty;
-        public string NewFileName
-        {
-            get
-            {
-                return _newFileName;
-            }
-            set
-            {
-                this.RaiseAndSetIfChanged(ref _newFileName, value);                
-            }
-        }
 
+        //TODO: UpdateExampleText
+        [ObservableProperty]
         private string _callNum = string.Empty;
-        public string CallNum
-        {
-            get
-            {
-                return _callNum;
-            }
-            set
-            {
-                this.RaiseAndSetIfChanged(ref _callNum, value);
-                UpdateExampleText();
-            }
-        }
 
+        [ObservableProperty]
         private bool _isService = false;
-        public bool IsService
-        {
-            get
-            {
-                return _isService;
-            }
-            set
-            {
-                this.RaiseAndSetIfChanged(ref _isService, value);
-            }
-        }
 
+        [ObservableProperty]
         private ScanType _currentType;
-        public ScanType CurrentType
-        {
-            get
-            {
-                return _currentType;
-            }
-            set
-            {
-                this.RaiseAndSetIfChanged(ref _currentType, value);
-            }
-        }
         public ScanStatus Response { get; set; }
 
-        private decimal nameLength;
-        public decimal NameLength
-        {
-            get
-            {
-                return nameLength;
-            }
-            set
-            {
-                nameLength = value;
-                this.RaiseAndSetIfChanged(ref nameLength, value);
-            }
-        }
+        [ObservableProperty]
+        private decimal _nameLength;
 
+        [ObservableProperty]
         private string _watermark = string.Empty;
-        public string Watermark
-        {
-            get
-            {
-                return _watermark;
-            }
-            set
-            {
-                this.RaiseAndSetIfChanged(ref _watermark, value);
-            }
-        }
         #endregion
 
-        #region Commands
-        public ICommand RenameCommand { get; }
-        public ICommand SkipCommand { get; }
-        public ICommand CancelCommand { get; }
-        #endregion
-
-        public FileRenameViewModel(Window currentWindow, string fileName, ScanType tempType, double numLength, string prefixText)
+        public FileRenameViewModel(Window currentWindow, string fileName, ScanType tempType, double numLength, string prefixText, IMessenger theMessenger)
         {
             _fileName = fileName;
             _currentWindow = currentWindow;
-
-            RenameCommand = new RenameCommand(_currentWindow, this);
-            SkipCommand = new SkipCommand(_currentWindow, this);
-            CancelCommand = new CancelCommand(_currentWindow, this);
+            _theMessenger = theMessenger;
 
             PropertyChanged += OnPropertyChange;
 
             _currentWindow.Opened += WindowOpened;
             _currentWindow.Closing += OnWindowClosing;
 
+            TypeText = tempType.ToString();
             CurrentType = tempType;
             _prefixText = prefixText;
 
@@ -194,26 +97,71 @@ namespace Scans_Mover.ViewModels
             }
         }
 
-        public void WindowOpened(object? sender, EventArgs e)
+        #region Commands
+
+        public bool CanRename()
         {
-            FileAccessService.LoadDefaultApplication(_fileName);
-            _currentWindow.FindControl<TextBox>("tbxFileName")?.Focus();
+            if (CurrentType == ScanType.Service)
+            {
+                return decimal.TryParse(NewFileName, out _)
+                    && NewFileName.Length >= NameLength
+                    && int.TryParse(CallNum, out int i)
+                    && i > 0;
+            }
+            else if (CurrentType != ScanType.Shipping)
+            {
+                return decimal.TryParse(NewFileName, out _)
+                    && NewFileName.Length >= NameLength;
+            }
+            else
+            {
+                return DateTime.TryParse(NewFileName, out _)
+                    && NewFileName.Length >= NameLength;
+            }
+
         }
 
-        public void OnWindowClosing(object? sender, CancelEventArgs e)
+        [RelayCommand(CanExecute = nameof(CanRename))]
+        public void Rename()
         {
-            if (CurrentType == ScanType.Shipping && Response == ScanStatus.OK)
+            if (CurrentType == ScanType.Shipping)
             {
                 string preFormatName = NewFileName;
                 NewFileName = preFormatName[0].ToString() + preFormatName[1].ToString() + "-" +
                 preFormatName[2].ToString() + preFormatName[3].ToString() + preFormatName[4].ToString() + "-" +
                 preFormatName[5].ToString() + preFormatName[6].ToString();
             }
-            else if (CurrentType == ScanType.Service && Response == ScanStatus.OK)
+            else if (CurrentType == ScanType.Service)
             {
                 NewFileName = NewFileName + "_Call " + CallNum;
             }
+            _theMessenger.Send(new RenameMessage(ScanStatus.OK, NewFileName));
+            _currentWindow.Close();
+        }
 
+        [RelayCommand]
+        public void Skip()
+        {
+            _theMessenger.Send(new RenameMessage(ScanStatus.Skip, string.Empty));
+            _currentWindow.Close();
+        }
+
+        [RelayCommand]
+        public void Cancel()
+        {
+            _theMessenger.Send(new RenameMessage(ScanStatus.Cancel, string.Empty));
+            _currentWindow.Close();
+        } 
+        #endregion
+
+        public async void WindowOpened(object? sender, EventArgs e)
+        {
+            await FileAccessService.LoadDefaultApplicationAsync(_fileName);
+            _currentWindow.FindControl<TextBox>("tbxFileName")?.Focus();
+        }
+
+        public void OnWindowClosing(object? sender, CancelEventArgs e)
+        {     
             _currentWindow.Opened -= WindowOpened;
             _currentWindow.Closing -= OnWindowClosing;
         }
@@ -252,13 +200,6 @@ namespace Scans_Mover.ViewModels
             {
                 UpdateExampleText();
             }
-        }
-
-        protected override void Dispose()
-        {
-            _currentWindow.Opened -= WindowOpened;
-            _currentWindow.Closing -= OnWindowClosing;
-            base.Dispose();
         }
     }
 }

@@ -4,32 +4,35 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:custom="clr-namespace:Scans_Mover.Components"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d" d:DesignWidth="550" d:DesignHeight="305"
         x:Class="Scans_Mover.Views.MoverView"
         Height="305"
         Width="550"
+        MinWidth="550"
+        MinHeight="305"
         Title="Scans Mover"
         WindowStartupLocation="CenterScreen"
         Icon="/Assets/Gas-trolley-5.ico">
+  
 
   <Grid Margin="5 5 5 5">
 
     <StackPanel VerticalAlignment="Center"
-                IsVisible="{Binding IsBusy}"
+                IsVisible="{Binding Busy}"
                 Grid.ColumnSpan="2">
 
       <TextBlock Text="Processing. Please Wait"
                  HorizontalAlignment="Center"/>
 
       <custom:LoadingSpinner Margin="0 10 0 0"
-                             IsLoading="{Binding IsBusy}"
+                             IsLoading="{Binding Busy}"
                              Diameter="150"
                              Thickness="5"
                              Color="CadetBlue"/>
 
     </StackPanel>
 
-    <Grid IsVisible="{Binding !IsBusy}" ColumnDefinitions="auto,auto">
+    <Grid IsVisible="{Binding !Busy}" ColumnDefinitions="auto,auto">
 
       <Border Grid.Column="0" BorderThickness="0 0 1 0" BorderBrush="LightBlue">
         <Grid RowDefinitions="auto,auto,auto,auto,auto,auto">
@@ -118,7 +121,7 @@
 
             <TextBox Grid.Row="0" Grid.Column="1"
                      Grid.ColumnSpan="3"
-                     Text="{Binding PrefixText}"
+                     Text="{Binding Prefix}"
                      MinWidth="200"
                      VerticalAlignment="Center"/>
 

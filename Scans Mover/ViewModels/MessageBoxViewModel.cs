@@ -1,32 +1,26 @@
 ﻿using Avalonia.Controls;
-using Scans_Mover.Commands;
-using ReactiveUI;
-using System.Windows.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace Scans_Mover.ViewModels
 {
-    public  class MessageBoxViewModel : ReactiveObject
+    public partial class MessageBoxViewModel : ObservableObject
     {
+        private readonly Window _currentWindow;
 
+        [ObservableProperty]
         private string _messageText = string.Empty;
-        public string MessageText
-        {
-            get
-            {
-                return _messageText;
-            }
-            set
-            {
-                this.RaiseAndSetIfChanged(ref _messageText,value);
-            }
-        }
-
-        public ICommand OKCommand { get; }
 
         public MessageBoxViewModel(Window currentWindow,string messageText)
         {
             MessageText = messageText;
-            OKCommand = new OKCommand(currentWindow);
+            _currentWindow = currentWindow;
+        }
+
+        [RelayCommand]
+        public void OK()
+        {
+            _currentWindow.Close();
         }
     }
 }
