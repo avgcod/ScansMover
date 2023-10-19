@@ -183,7 +183,7 @@ namespace Scans_Mover.ViewModels
             Busy = true;
             _filesMoved = false;
 
-            IEnumerable<string> filesNeedingFolders = await DocumentMoverService.MoveToFolderAsync(this, _theMessenger, MainFolder);
+            IEnumerable<string> filesNeedingFolders = await DocumentMoverService.MoveToFolderAsync(this, _theMessenger);
 
             if(_filesMoved)
             {

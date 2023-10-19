@@ -17,7 +17,7 @@ namespace Scans_Mover.Services
     /// <summary>
     /// Service to access filed from a local or remote file system.
     /// </summary>
-    public class FileAccessService
+    public static class FileAccessService
     {
         /// <summary>
         /// Reads settings information from a json file.

@@ -16,7 +16,7 @@ namespace Scans_Mover.Services
         /// Moves scanned documents to the correct folder.
         /// </summary>
         /// <returns>IEnumerable of files that appear to be duplcates or do not have a folder to be put in.</returns>
-        public static async Task<IEnumerable<string>> MoveToFolderAsync(MoverViewModel theModel, IMessenger theMessenger, string folder)
+        public static async Task<IEnumerable<string>> MoveToFolderAsync(MoverViewModel theModel, IMessenger theMessenger)
         {
             List<string> noFoldersFound = new List<string>();
             IEnumerable<FileInfo> theFiles = await FileAccessService.GetFilesAsync(theModel.MainFolder);
