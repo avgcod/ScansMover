@@ -14,7 +14,7 @@ using System.Linq;
 
 namespace Scans_Mover.ViewModels
 {
-    public partial class MoverViewModel : ObservableObject, IRecipient<RenameMessage>, IRecipient<LogMessage>, IRecipient<PagesPerDocumentErrorMessage>
+    public partial class MoverViewModel : ObservableObject, IRecipient<RenameMessage>, IRecipient<MoveLogMessage>, IRecipient<PagesPerDocumentErrorMessage>
     {
         #region Variables
         private readonly string _settingsFile;
@@ -81,7 +81,7 @@ namespace Scans_Mover.ViewModels
 
 
             _theMessenger.Register<RenameMessage>(this);
-            _theMessenger.Register<LogMessage>(this);
+            _theMessenger.Register<MoveLogMessage>(this);
             _theMessenger.Register<PagesPerDocumentErrorMessage>(this);
             _parentWindow.Opened += OnWindowOpened;
             _parentWindow.Closing += OnWindowClosing;
@@ -185,13 +185,20 @@ namespace Scans_Mover.ViewModels
 
             IEnumerable<string> filesNeedingFolders = await DocumentMoverService.MoveToFolderAsync(this, _theMessenger, MainFolder);
 
-            if (filesNeedingFolders.Any())
+            if(_filesMoved)
             {
-                await DisplayMessageBoxAsync("Finished Moving Files." + Environment.NewLine + "Some Files Need Folders.");
+                if (filesNeedingFolders.Any())
+                {
+                    await DisplayMessageBoxAsync("Finished Moving Files." + Environment.NewLine + "Some Files Need Folders.");
+                }
+                else
+                {
+                    await DisplayMessageBoxAsync("Finished Moving Files.");
+                }
             }
             else
             {
-                await DisplayMessageBoxAsync("Finished Moving Files.");
+                await DisplayMessageBoxAsync("No Files Found To Move.");
             }
 
             Busy = false;
@@ -452,14 +459,14 @@ namespace Scans_Mover.ViewModels
         /// <param name="theMessage">The RenameMessage to process.</param>
         private void HandleRenameMessage(RenameMessage theMessage)
         {
-            CurrentScanStatus = theMessage.scanStatus;
-            if (theMessage.scanStatus == ScanStatus.OK)
+            CurrentScanStatus = theMessage.ScanStatus;
+            if (theMessage.ScanStatus == ScanStatus.OK)
             {
 
-                CurrentScanNewFileName = theMessage.newFileName;
+                CurrentScanNewFileName = theMessage.NewFileName;
 
             }
-            else if (theMessage.scanStatus == ScanStatus.Skip)
+            else if (theMessage.ScanStatus == ScanStatus.Skip)
             {
                 HasSkippedFiles = true;
             }
@@ -468,11 +475,11 @@ namespace Scans_Mover.ViewModels
         /// Processes LogMessage messages.
         /// </summary>
         /// <param name="theMessage">The LogMessage to process.</param>
-        private async Task HandleLogMessage(LogMessage theMessage)
+        private async Task HandleMoveLogMessage(MoveLogMessage theMessage)
         {
             _filesMoved = true;
-            await FileAccessService.SaveLogAsync(theMessage.logInfo, theMessage.logFile);
-            await FileAccessService.LoadDefaultApplicationAsync(theMessage.logFile);
+            await FileAccessService.SaveLogAsync(theMessage.LogInfo, theMessage.LogFile);
+            await FileAccessService.LoadDefaultApplicationAsync(theMessage.LogFile);
         }
         /// <summary>
         /// Processes PagesPerDocumentErrorMessage messages.
@@ -480,7 +487,7 @@ namespace Scans_Mover.ViewModels
         /// <param name="theMessage">The PagesPerDocumentErrorMessage to process.</param>
         private async Task HandlePagesPerDocumentErrorMessage(PagesPerDocumentErrorMessage theMessage)
         {
-            await DisplayMessageBoxAsync(theMessage.info);
+            await DisplayMessageBoxAsync(theMessage.Info);
         }
 
         /// <summary>
@@ -496,9 +503,9 @@ namespace Scans_Mover.ViewModels
         /// Handles LogMessages that are sent.
         /// </summary>
         /// <param name="theMessage">The LogMessage that was sent.</param>
-        public async void Receive(LogMessage theMessage)
+        public async void Receive(MoveLogMessage theMessage)
         {
-            await HandleLogMessage(theMessage);
+            await HandleMoveLogMessage(theMessage);
         }
 
         /// <summary>

@@ -61,7 +61,7 @@ namespace Scans_Mover.Services
             if (moveLog.Any())
             {
                 string logFile = theModel.SelectedScanType.ToString() + " Move Log - " + GetTimeStamp(DateTime.Now) + ".txt";
-                theMessenger.Send<LogMessage>(new LogMessage(moveLog, logFile));
+                theMessenger.Send<MoveLogMessage>(new MoveLogMessage(moveLog, logFile));
             }
 
             return noFoldersFound;

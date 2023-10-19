@@ -14,7 +14,7 @@ namespace Scans_Mover.ViewModels
         #region Variables
         private readonly Window _currentWindow;
         private readonly string _fileName;
-        private IMessenger _theMessenger;
+        private readonly IMessenger _theMessenger;
         #endregion
 
         #region Properties
