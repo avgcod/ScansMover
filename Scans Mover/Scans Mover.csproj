@@ -37,4 +37,7 @@
       <DependentUpon>MoverView.axaml</DependentUpon>
     </Compile>
   </ItemGroup>
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Views\ErrorMessageBoxView.axaml" />
+  </ItemGroup>
 </Project>

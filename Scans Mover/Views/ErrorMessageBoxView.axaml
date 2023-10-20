@@ -1,0 +1,38 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="325" d:DesignHeight="250"
+        x:Class="Scans_Mover.Views.ErrorMessageBoxView"
+        Title="Error Occurred"
+        SizeToContent="WidthAndHeight"
+        SystemDecorations="BorderOnly"
+        WindowStartupLocation="CenterOwner">
+
+  <Grid RowDefinitions="auto,auto,auto,auto,auto,auto" ColumnDefinitions="auto"
+        Margin="5"
+        HorizontalAlignment="Center">
+
+    <TextBlock Grid.Row="0" Grid.Column="0" HorizontalAlignment="Center"
+               Text="There was an error during operation."/>
+
+    <TextBlock Grid.Row="1" Grid.Column="0" Text="Error Type:"
+               HorizontalAlignment="Center"/>
+    <TextBox Grid.Row="2" Grid.Column="0" Text="{Binding ErrorType}"
+             MinWidth="150"/>
+
+    <TextBlock Grid.Row="3" Grid.Column="0"
+               HorizontalAlignment="Center"
+               Text="Error Message:"/>
+    <TextBox Grid.Row="4" Grid.Column="0" Text="{Binding ErrorMessage}"
+             MinWidth="150"
+             MinHeight="100"
+             Margin="0 0 0 5"
+             TextWrapping="Wrap"/>
+    <Button Grid.Row="6" Grid.Column="0"
+            Content="OK" Command="{Binding OKCommand}"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Bottom"/>
+
+  </Grid>
+</Window>

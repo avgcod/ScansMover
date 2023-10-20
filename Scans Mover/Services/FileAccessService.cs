@@ -1,5 +1,6 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Platform.Storage;
+using CommunityToolkit.Mvvm.Messaging;
 using Scans_Mover.Models;
 using System;
 using System.Collections.Generic;
@@ -24,7 +25,7 @@ namespace Scans_Mover.Services
         /// </summary>
         /// <param name="fileName">Json file to load information from.</param>
         /// <returns>Settings object</returns>
-        public static Settings LoadSettings(string fileName)
+        public static Settings LoadSettings(string fileName, IMessenger theMessenger)
         {
             if (File.Exists(fileName))
             {
@@ -35,7 +36,7 @@ namespace Scans_Mover.Services
                 }
                 catch (Exception ex)
                 {
-                    throw new Exception(ex.Message);
+                    theMessenger.Send<OperationErrorMessage>(new OperationErrorMessage(ex.GetType().Name, ex.Message));
                 }
 
             }
@@ -48,9 +49,20 @@ namespace Scans_Mover.Services
         /// </summary>
         /// <param name="fileName">PDF file to load.</param>
         /// <returns>PDF document.</returns>
-        public static PdfDocument LoadPDFDocument(string fileName)
+        public static PdfDocument? LoadPDFDocument(string fileName, IMessenger theMessenger)
         {
-            return PdfDocument.Open(fileName);
+            try
+            {
+                return PdfDocument.Open(fileName);
+            }
+            catch (Exception ex)
+            {
+
+                theMessenger.Send<OperationErrorMessage>(new OperationErrorMessage(ex.GetType().Name, ex.Message));
+            }
+
+            return null;
+            
         }
 
         /// <summary>
@@ -58,7 +70,7 @@ namespace Scans_Mover.Services
         /// </summary>
         /// <param name="fileName">Json file to load information from.</param>
         /// <returns>Settings object</returns>
-        public static async Task<Settings> LoadSettingsAsync(string fileName)
+        public static async Task<Settings> LoadSettingsAsync(string fileName, IMessenger theMessenger)
         {
             Settings newSettings = new Settings();
             if (File.Exists(fileName))
@@ -71,7 +83,7 @@ namespace Scans_Mover.Services
                 }
                 catch (Exception ex)
                 {
-                    throw new Exception(ex.Message);
+                    theMessenger.Send<OperationErrorMessage>(new OperationErrorMessage(ex.GetType().Name, ex.Message));
                 }
 
             }
@@ -84,9 +96,20 @@ namespace Scans_Mover.Services
         /// </summary>
         /// <param name="fileName">PDF file to load.</param>
         /// <returns>PDF document.</returns>
-        public static async Task<PdfDocument> LoadPDFDocumentAsync(string fileName)
+        public static async Task<PdfDocument?> LoadPDFDocumentAsync(string fileName, IMessenger theMessenger)
         {
-            return await Task.Run(() => PdfDocument.Open(fileName));
+            try
+            {
+                return await Task.Run(() => PdfDocument.Open(fileName));
+            }
+            catch (Exception ex)
+            {
+
+                theMessenger.Send<OperationErrorMessage>(new OperationErrorMessage(ex.GetType().Name, ex.Message));
+            }
+
+            return null;
+            
         }
 
         /// <summary>
@@ -96,18 +119,17 @@ namespace Scans_Mover.Services
         /// <param name="fileName">File name to save to.</param>
         /// <returns>If the operation succeeded.</returns>
         /// <exception cref="Exception">Error trying to save.</exception>
-        public static bool SaveSettings(Settings information, string fileName)
+        public static void SaveSettings(Settings information, string fileName, IMessenger theMessenger)
         {
             try
             {
                 JsonSerializerOptions options = new JsonSerializerOptions() { WriteIndented = true };
                 string jsonText = JsonSerializer.Serialize(information, options);
                 File.WriteAllText(fileName,jsonText);
-                return true;
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                theMessenger.Send<OperationErrorMessage>(new OperationErrorMessage(ex.GetType().Name, ex.Message));
             }
         }
 
@@ -118,7 +140,7 @@ namespace Scans_Mover.Services
         /// <param name="thePDF">The PDF document to save.</param>
         /// <returns>If the operation succeeded.</returns>
         /// <exception cref="Exception">Error saving.</exception>
-        public static bool SavePDFDocument(string fileName, byte[] thePDF)
+        public static void SavePDFDocument(string fileName, byte[] thePDF, IMessenger theMessenger)
         {
             if (!File.Exists(fileName))
             {
@@ -130,13 +152,8 @@ namespace Scans_Mover.Services
                 }
                 catch (Exception ex)
                 {
-                    throw new Exception(ex.Message);
+                    theMessenger.Send<OperationErrorMessage>(new OperationErrorMessage(ex.GetType().Name, ex.Message));
                 }
-                return true;
-            }
-            else
-            {
-                return false;
             }
         }
 
@@ -147,18 +164,17 @@ namespace Scans_Mover.Services
         /// <param name="fileName">File name to save to.</param>
         /// <returns>If the operation succeeded.</returns>
         /// <exception cref="Exception">Error trying to save.</exception>
-        public static async Task<bool> SaveSettingsAsync(Settings information, string fileName)
+        public static async Task SaveSettingsAsync(Settings information, string fileName, IMessenger theMessenger)
         {
             try
             {
                 JsonSerializerOptions options = new JsonSerializerOptions() { WriteIndented = true };
                 string jsonText = JsonSerializer.Serialize(information, options);
                 await File.WriteAllTextAsync(fileName, jsonText);
-                return true;
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                theMessenger.Send<OperationErrorMessage>(new OperationErrorMessage(ex.GetType().Name, ex.Message));
             }
         }
 
@@ -169,7 +185,7 @@ namespace Scans_Mover.Services
         /// <param name="fileName">Text file to save to.</param>
         /// <returns>If the operation succeeded.</returns>
         /// <exception cref="Exception"></exception>
-        public static async Task<bool> SaveLogAsync(IEnumerable<string> information, string fileName)
+        public static async Task SaveLogAsync(IEnumerable<string> information, string fileName, IMessenger theMessenger)
         {
             try
             {
@@ -179,13 +195,11 @@ namespace Scans_Mover.Services
                     {
                         await writer.WriteLineAsync(theInfo);
                     }
-                }
-                
-                return true;
+                }                
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                theMessenger.Send<OperationErrorMessage>(new OperationErrorMessage(ex.GetType().Name, ex.Message));
             }
         }
 
@@ -196,7 +210,7 @@ namespace Scans_Mover.Services
         /// <param name="thePDF">The PDF document to save.</param>
         /// <returns>If the operation succeeded.</returns>
         /// <exception cref="Exception">Error saving.</exception>
-        public static async Task<bool> SavePDFDocumentAsync(string fileName, byte[] thePDF)
+        public static async Task SavePDFDocumentAsync(string fileName, byte[] thePDF, IMessenger theMessenger)
         {
             if (!File.Exists(fileName))
             {
@@ -206,16 +220,11 @@ namespace Scans_Mover.Services
 
                     await File.WriteAllBytesAsync(fileName, thePDF);
 
-                    return true;
                 }
                 catch (Exception ex)
                 {
-                    throw new Exception(ex.Message);
+                    theMessenger.Send<OperationErrorMessage>(new OperationErrorMessage(ex.GetType().Name, ex.Message));
                 }
-            }
-            else
-            {
-                return false;
             }
         }
 
@@ -225,9 +234,9 @@ namespace Scans_Mover.Services
         /// <param name="oldFileName">Old file name.</param>
         /// <param name="newFileName">New file name.</param>
         /// <returns>If the operation succeeded.</returns>
-        public static bool RenameFile(string oldFileName, string newFileName)
+        public static bool RenameFile(string oldFileName, string newFileName, IMessenger theMessenger)
         {
-            return MoveFile(oldFileName, newFileName);
+            return MoveFile(oldFileName, newFileName, theMessenger);
         }
 
         /// <summary>
@@ -236,9 +245,9 @@ namespace Scans_Mover.Services
         /// <param name="oldFileName">Old file name.</param>
         /// <param name="newFileName">New file name.</param>
         /// <returns>If the operation succeeded.</returns>
-        public static async Task<bool> RenameFileAsync(string oldFileName, string newFileName)
+        public static async Task<bool> RenameFileAsync(string oldFileName, string newFileName, IMessenger theMessenger)
         {
-            return await MoveFileAsync(oldFileName, newFileName);
+            return await MoveFileAsync(oldFileName, newFileName, theMessenger);
         }
 
         /// <summary>
@@ -246,9 +255,18 @@ namespace Scans_Mover.Services
         /// </summary>
         /// <param name="rootDirectory">Root directory to search.</param>
         /// <returns>List of subdirectory names found.</returns>
-        public static IEnumerable<string> GetSubDirectories(string rootDirectory)
+        public static IEnumerable<string> GetSubDirectories(string rootDirectory, IMessenger theMessenger)
         {
-            return new DirectoryInfo(rootDirectory).EnumerateDirectories().Select(x => x.Name).ToList();
+            try
+            {
+                return new DirectoryInfo(rootDirectory).EnumerateDirectories().Select(x => x.Name);
+            }
+            catch (Exception ex)
+            {
+                theMessenger.Send<OperationErrorMessage>(new OperationErrorMessage(ex.GetType().Name, ex.Message));
+                return new List<string>();
+            }
+            
         }
 
         /// <summary>
@@ -256,9 +274,18 @@ namespace Scans_Mover.Services
         /// </summary>
         /// <param name="rootDirectory">Root directory to search.</param>
         /// <returns>List of subdirectory names found.</returns>
-        public static async Task<IEnumerable<string>> GetSubDirectoriesAsync(string rootDirectory)
+        public static async Task<IEnumerable<string>> GetSubDirectoriesAsync(string rootDirectory, IMessenger theMessenger)
         {
-            return await Task.Run(() => new DirectoryInfo(rootDirectory).EnumerateDirectories().Select(x => x.Name).ToList());
+            try
+            {
+                return await Task.Run(() => new DirectoryInfo(rootDirectory).EnumerateDirectories().Select(x => x.Name));
+            }
+            catch (Exception ex)
+            {
+                theMessenger.Send<OperationErrorMessage>(new OperationErrorMessage(ex.GetType().Name, ex.Message));
+                return new List<string>();
+            }
+            
         }
 
         /// <summary>
@@ -266,9 +293,17 @@ namespace Scans_Mover.Services
         /// </summary>
         /// <param name="rootDirectory">Root directory to search.</param>
         /// <returns>List of files found.</returns>
-        public static FileInfo[] GetFiles(string rootDirectory)
+        public static IEnumerable<FileInfo> GetFiles(string rootDirectory, IMessenger theMessenger)
         {
-            return new DirectoryInfo(rootDirectory).GetFiles();
+            try
+            {
+                return new DirectoryInfo(rootDirectory).GetFiles();
+            }
+            catch (Exception ex)
+            {
+                theMessenger.Send<OperationErrorMessage>(new OperationErrorMessage(ex.GetType().Name, ex.Message));
+                return new List<FileInfo>();
+            }            
         }
 
         /// <summary>
@@ -276,9 +311,17 @@ namespace Scans_Mover.Services
         /// </summary>
         /// <param name="rootDirectory">Root directory to search.</param>
         /// <returns>List of files found.</returns>
-        public static async Task<IEnumerable<FileInfo>> GetFilesAsync(string rootDirectory)
+        public static async Task<IEnumerable<FileInfo>> GetFilesAsync(string rootDirectory, IMessenger theMessenger)
         {
-            return await Task.Run(() => new DirectoryInfo(rootDirectory).GetFiles().ToList());
+            try
+            {
+                return await Task.Run(() => new DirectoryInfo(rootDirectory).GetFiles().ToList());
+            }
+            catch (Exception ex)
+            {
+                theMessenger.Send<OperationErrorMessage>(new OperationErrorMessage(ex.GetType().Name, ex.Message));
+                return new List<FileInfo>();
+            }            
         }
 
         /// <summary>
@@ -327,9 +370,17 @@ namespace Scans_Mover.Services
         /// </summary>
         /// <param name="directoryLocation">The directory to check.</param>
         /// <returns>If the directory exists.</returns>
-        public static bool DirectoryExists(string directoryLocation)
+        public static bool DirectoryExists(string directoryLocation, IMessenger theMessenger)
         {
-            return Directory.Exists(directoryLocation);
+            try
+            {
+                return Directory.Exists(directoryLocation);
+            }
+            catch (Exception ex)
+            {
+                theMessenger.Send<OperationErrorMessage>(new OperationErrorMessage(ex.GetType().Name, ex.Message));
+                return false;
+            }            
         }
 
         /// <summary>
@@ -337,9 +388,17 @@ namespace Scans_Mover.Services
         /// </summary>
         /// <param name="fileName">The file to check.</param>
         /// <returns>If the file exists.</returns>
-        public static bool FileExists(string fileName)
+        public static bool FileExists(string fileName, IMessenger theMessenger)
         {
-            return File.Exists(fileName);
+            try
+            {
+                return File.Exists(fileName);
+            }
+            catch (Exception ex)
+            {
+                theMessenger.Send<OperationErrorMessage>(new OperationErrorMessage(ex.GetType().Name, ex.Message));
+                return false;
+            }            
         }
 
         /// <summary>
@@ -347,9 +406,17 @@ namespace Scans_Mover.Services
         /// </summary>
         /// <param name="directoryLocation">The directory to check.</param>
         /// <returns>If the directory exists.</returns>
-        public static async Task<bool> DirectoryExistsAsync(string directoryLocation)
+        public static async Task<bool> DirectoryExistsAsync(string directoryLocation, IMessenger theMessenger)
         {
-            return await Task.Run(() => Directory.Exists(directoryLocation));
+            try
+            {
+                return await Task.Run(() => Directory.Exists(directoryLocation));
+            }
+            catch (Exception ex)
+            {
+                theMessenger.Send<OperationErrorMessage>(new OperationErrorMessage(ex.GetType().Name, ex.Message));
+                return false;
+            }            
         }
 
         /// <summary>
@@ -357,9 +424,17 @@ namespace Scans_Mover.Services
         /// </summary>
         /// <param name="fileName">The file to check.</param>
         /// <returns>If the file exists.</returns>
-        public static async Task<bool> FileExistsAsync(string fileName)
+        public static async Task<bool> FileExistsAsync(string fileName, IMessenger theMessenger)
         {
-            return await Task.Run(() => File.Exists(fileName));
+            try
+            {
+                return await Task.Run(() => File.Exists(fileName));
+            }
+            catch (Exception ex)
+            {
+                theMessenger.Send<OperationErrorMessage>(new OperationErrorMessage(ex.GetType().Name, ex.Message));
+                return false;
+            }            
         }
 
         /// <summary>
@@ -369,11 +444,11 @@ namespace Scans_Mover.Services
         /// <param name="destination">New file location.</param>
         /// <returns>If the operation succeeded.</returns>
         /// <exception cref="Exception">Error moving file.</exception>
-        public static bool MoveFile(string source, string destination)
+        public static bool MoveFile(string source, string destination, IMessenger theMessenger)
         {
             try
             {
-                if (!FileExists(destination))
+                if (!FileExists(destination, theMessenger))
                 {
                     File.Move(source, destination);
                     return true;
@@ -386,7 +461,8 @@ namespace Scans_Mover.Services
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                theMessenger.Send<OperationErrorMessage>(new OperationErrorMessage(ex.GetType().Name, ex.Message));
+                return false;
             }
         }
 
@@ -397,11 +473,11 @@ namespace Scans_Mover.Services
         /// <param name="destination">New file location.</param>
         /// <returns>If the operation succeeded.</returns>
         /// <exception cref="Exception">Error moving file.</exception>
-        public static async Task<bool> MoveFileAsync(string source, string destination)
+        public static async Task<bool> MoveFileAsync(string source, string destination, IMessenger theMessenger)
         {
             try
             {
-                if (!FileExists(destination))
+                if (!FileExists(destination, theMessenger))
                 {
                     await Task.Run(() => File.Move(source, destination));
                     return true;
@@ -413,7 +489,8 @@ namespace Scans_Mover.Services
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                theMessenger.Send<OperationErrorMessage>(new OperationErrorMessage(ex.GetType().Name, ex.Message));
+                return false;
             }
         }
 
@@ -421,68 +498,82 @@ namespace Scans_Mover.Services
         /// Opens a file using the default application.
         /// </summary>
         /// <param name="fileName">The file to open.</param>
-        public static void LoadDefaultApplication(string fileName)
+        public static void LoadDefaultApplication(string fileName, IMessenger theMessenger)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            try
             {
-                ProcessStartInfo theProcessInfo = new ProcessStartInfo(fileName)
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    UseShellExecute = true
-                };
+                    ProcessStartInfo theProcessInfo = new ProcessStartInfo(fileName)
+                    {
+                        UseShellExecute = true
+                    };
 
-                using (Process? theProcess = Process.Start(theProcessInfo))
+                    using (Process? theProcess = Process.Start(theProcessInfo))
+                    {
+                        theProcess?.WaitForExit();
+                    }
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
-                    theProcess?.WaitForExit();
+                    using (Process? theProcess = Process.Start("xdg-open", fileName))
+                    {
+                        theProcess?.WaitForExit();
+                    }
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    using (Process? theProcess = Process.Start("open", fileName))
+                    {
+                        theProcess?.WaitForExit();
+                    }
                 }
             }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            catch (Exception ex)
             {
-                using (Process? theProcess = Process.Start("xdg-open", fileName))
-                {
-                    theProcess?.WaitForExit();
-                }
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                using (Process? theProcess = Process.Start("open", fileName))
-                {
-                    theProcess?.WaitForExit();
-                }
-            }
+                theMessenger.Send<OperationErrorMessage>(new OperationErrorMessage(ex.GetType().Name, ex.Message));
+            }            
         }
 
         /// <summary>
         /// Opens a file using the default application asynchronously.
         /// </summary>
         /// <param name="fileName">The file to open.</param>
-        public static async Task LoadDefaultApplicationAsync(string fileName)
+        public static async Task LoadDefaultApplicationAsync(string fileName, IMessenger theMessenger)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            try
             {
-                ProcessStartInfo theProcessInfo = new ProcessStartInfo(fileName)
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    UseShellExecute = true
-                };
+                    ProcessStartInfo theProcessInfo = new ProcessStartInfo(fileName)
+                    {
+                        UseShellExecute = true
+                    };
 
-                using (Process? theProcess = Process.Start(theProcessInfo))
+                    using (Process? theProcess = Process.Start(theProcessInfo))
+                    {
+                        await theProcess?.WaitForExitAsync();
+                    }
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
-                    await theProcess?.WaitForExitAsync();
+                    using (Process? theProcess = Process.Start("xdg-open", fileName))
+                    {
+                        await theProcess?.WaitForExitAsync();
+                    }
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    using (Process? theProcess = Process.Start("open", fileName))
+                    {
+                        await theProcess?.WaitForExitAsync();
+                    }
                 }
             }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            catch (Exception ex)
             {
-                using (Process? theProcess = Process.Start("xdg-open", fileName))
-                {
-                    await theProcess?.WaitForExitAsync();
-                }
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                using (Process? theProcess = Process.Start("open", fileName))
-                {
-                    await theProcess?.WaitForExitAsync();
-                }
-            }
+                theMessenger.Send<OperationErrorMessage>(new OperationErrorMessage(ex.GetType().Name, ex.Message));
+            }            
         }
 
         /// <summary>
@@ -490,15 +581,24 @@ namespace Scans_Mover.Services
         /// </summary>
         /// <param name="_currentWindow">The current window.</param>
         /// <returns>The selected folder.</returns>
-        public static async Task<IStorageFolder?> ChooseLocationAsync(Window _currentWindow)
+        public static async Task<IStorageFolder?> ChooseLocationAsync(Window _currentWindow, IMessenger theMessenger)
         {
-            var folders = await _currentWindow.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions()
+            try
             {
-                Title = "Select Destination Folder",
-                AllowMultiple = false
-            });
+                var folders = await _currentWindow.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions()
+                {
+                    Title = "Select Destination Folder",
+                    AllowMultiple = false
+                });
 
-            return folders.Count >= 1 ? folders[0] : null;
+                return folders.Count >= 1 ? folders[0] : null;
+            }
+            catch (Exception ex)
+            {
+                theMessenger.Send<OperationErrorMessage>(new OperationErrorMessage(ex.GetType().Name, ex.Message));
+                return null;
+            }
+            
         }
     }
 }

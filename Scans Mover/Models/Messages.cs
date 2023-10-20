@@ -8,4 +8,6 @@ namespace Scans_Mover.Models
 
     public record class PagesPerDocumentErrorMessage(string Info);
 
+    public record class OperationErrorMessage(string ErrorType, string ErrorMessage);
+
 }

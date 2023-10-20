@@ -3,23 +3,21 @@ using CommunityToolkit.Mvvm.Messaging;
 using Scans_Mover.Models;
 using Scans_Mover.ViewModels;
 using Scans_Mover.Views;
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Scans_Mover.Services
 {
     public static class FileRenameService
     {
-        private static async Task<bool> RenamePDFAsync(string fileName, string newName, string prefix)
+        private static async Task<bool> RenamePDFAsync(string fileName, string newName, string prefix, IMessenger theMessenger)
         {
             string directoryName = Path.GetDirectoryName(fileName) ?? string.Empty;
             if (!string.IsNullOrWhiteSpace(directoryName))
             {
-                return await FileAccessService.RenameFileAsync(fileName, Path.Combine(directoryName, prefix + newName + ".pdf"));
+                return await FileAccessService.RenameFileAsync(fileName, Path.Combine(directoryName, prefix + newName + ".pdf"), theMessenger);
             }
             else
             {
@@ -41,7 +39,7 @@ namespace Scans_Mover.Services
                     await renameView.ShowDialog(currentWindow);
                     if (viewModel.CurrentScanStatus == ScanStatus.OK)
                     {
-                        await RenamePDFAsync(fileName, viewModel.CurrentScanNewFileName, viewModel.Prefix);
+                        await RenamePDFAsync(fileName, viewModel.CurrentScanNewFileName, viewModel.Prefix, theMessenger);
                     }
                     else if (viewModel.CurrentScanStatus == ScanStatus.Cancel)
                     {

@@ -21,7 +21,7 @@ namespace Scans_Mover.Services
         public static async Task<IEnumerable<string>> SplitBatchPDFsAsync(MoverViewModel viewModel, IMessenger theMessenger)
         {
             List<string> pdfsToRename = new List<string>();
-            IEnumerable<FileInfo> theFiles = await FileAccessService.GetFilesAsync(viewModel.MainFolder);
+            IEnumerable<FileInfo> theFiles = await FileAccessService.GetFilesAsync(viewModel.MainFolder, theMessenger);
             theFiles = await Task.Run(() => theFiles.Where(x => x.Name.ToLower().Contains(viewModel.Prefix.ToLower() + " batch")).ToList());
             foreach (FileInfo theInfo in theFiles)
             {
@@ -45,7 +45,7 @@ namespace Scans_Mover.Services
             List<string> pdfsToRename = new List<string>();
             List<Task> pdfsToSave = new List<Task>();
 
-            using (PdfDocument theDocument = await FileAccessService.LoadPDFDocumentAsync(fileName))
+            using (PdfDocument theDocument = await FileAccessService.LoadPDFDocumentAsync(fileName, theMessenger))
             {
                 if ((theDocument.NumberOfPages % viewModel.PagesPerDocument) == 0)
                 {
@@ -67,16 +67,16 @@ namespace Scans_Mover.Services
 
                         newFileName = Path.Combine(path, viewModel.Prefix + title + ".pdf");
 
-                        if (title.Length < 2 || await FileAccessService.FileExistsAsync(newFileName))
+                        if (title.Length < 2 || await FileAccessService.FileExistsAsync(newFileName, theMessenger))
                         {
                             ticks = DateTime.Now.Ticks.ToString();
                             newFileName = newFileName + ticks + ".pdf";
-                            pdfsToSave.Add(FileAccessService.SavePDFDocumentAsync(newFileName, outputDocument));
+                            pdfsToSave.Add(FileAccessService.SavePDFDocumentAsync(newFileName, outputDocument, theMessenger));
                             pdfsToRename.Add(newFileName);
                         }
                         else
                         {
-                            pdfsToSave.Add(FileAccessService.SavePDFDocumentAsync(newFileName, outputDocument));
+                            pdfsToSave.Add(FileAccessService.SavePDFDocumentAsync(newFileName, outputDocument, theMessenger));
                         }
 
                     }

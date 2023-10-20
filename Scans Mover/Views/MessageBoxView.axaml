@@ -3,12 +3,11 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="180" d:DesignHeight="100"
-        Width="180" Height="100"
-        MinWidth="180" MinHeight="100"
         x:Class="Scans_Mover.Views.MessageBoxView"
         Title="Notice"
         WindowStartupLocation="CenterOwner"
-        SystemDecorations="BorderOnly">
+        SystemDecorations="BorderOnly"
+        SizeToContent="WidthAndHeight">
   
   <StackPanel Orientation="Vertical"
               Spacing="10"

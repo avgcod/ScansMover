@@ -14,7 +14,7 @@ using System.Linq;
 
 namespace Scans_Mover.ViewModels
 {
-    public partial class MoverViewModel : ObservableObject, IRecipient<RenameMessage>, IRecipient<MoveLogMessage>, IRecipient<PagesPerDocumentErrorMessage>
+    public partial class MoverViewModel : ObservableObject, IRecipient<RenameMessage>, IRecipient<MoveLogMessage>, IRecipient<PagesPerDocumentErrorMessage>, IRecipient<OperationErrorMessage>
     {
         #region Variables
         private readonly string _settingsFile;
@@ -83,6 +83,7 @@ namespace Scans_Mover.ViewModels
             _theMessenger.Register<RenameMessage>(this);
             _theMessenger.Register<MoveLogMessage>(this);
             _theMessenger.Register<PagesPerDocumentErrorMessage>(this);
+            _theMessenger.Register<OperationErrorMessage>(this);
             _parentWindow.Opened += OnWindowOpened;
             _parentWindow.Closing += OnWindowClosing;
         }
@@ -96,7 +97,7 @@ namespace Scans_Mover.ViewModels
         [RelayCommand]
         public async Task ChangeLocation()
         {
-            IStorageFolder? selectedFolder = await FileAccessService.ChooseLocationAsync(_parentWindow);
+            IStorageFolder? selectedFolder = await FileAccessService.ChooseLocationAsync(_parentWindow, _theMessenger);
 
             if (selectedFolder != null)
             {
@@ -211,7 +212,7 @@ namespace Scans_Mover.ViewModels
         /// </summary>
         private async Task LoadSettingsAsync()
         {
-            Settings = await FileAccessService.LoadSettingsAsync(_settingsFile);
+            Settings = await FileAccessService.LoadSettingsAsync(_settingsFile, _theMessenger);
 
             if (!string.IsNullOrEmpty(Settings.MainFolder))
             {
@@ -320,9 +321,9 @@ namespace Scans_Mover.ViewModels
         /// Saves the Settings property to a file.
         /// </summary>
         /// <returns>If the operation succeeded.</returns>
-        public async Task<bool> SaveSettingsAsync()
+        public async Task SaveSettingsAsync()
         {
-            return await FileAccessService.SaveSettingsAsync(Settings, _settingsFile);
+            await FileAccessService.SaveSettingsAsync(Settings, _settingsFile, _theMessenger);
         }
 
         #endregion
@@ -463,6 +464,19 @@ namespace Scans_Mover.ViewModels
 
         #region Message Handling
         /// <summary>
+        /// Displays a message box with message information.
+        /// </summary>
+        /// <param name="theMessage">The message to show</param>
+        /// <returns>Task</returns>
+        private async Task HandleOperationErrorMessage(OperationErrorMessage theMessage)
+        {
+            ErrorMessageBoxView emboxView = new ErrorMessageBoxView();
+
+            emboxView.DataContext = new ErrorMessageBoxViewModel(emboxView, theMessage);
+
+            await emboxView.ShowDialog(_parentWindow);
+        }
+        /// <summary>
         /// Processes RenameMessage messages.
         /// </summary>
         /// <param name="theMessage">The RenameMessage to process.</param>
@@ -487,8 +501,8 @@ namespace Scans_Mover.ViewModels
         private async Task HandleMoveLogMessage(MoveLogMessage theMessage)
         {
             _filesMoved = true;
-            await FileAccessService.SaveLogAsync(theMessage.LogInfo, theMessage.LogFile);
-            await FileAccessService.LoadDefaultApplicationAsync(theMessage.LogFile);
+            await FileAccessService.SaveLogAsync(theMessage.LogInfo, theMessage.LogFile, _theMessenger);
+            await FileAccessService.LoadDefaultApplicationAsync(theMessage.LogFile, _theMessenger);
         }
         /// <summary>
         /// Processes PagesPerDocumentErrorMessage messages.
@@ -520,10 +534,19 @@ namespace Scans_Mover.ViewModels
         /// <summary>
         /// Handles PagesPerDocumentErrorMessage that are sent.
         /// </summary>
-        /// <param name="theMessage"></param>
+        /// <param name="theMessage">The PagesPerDocumentErrorMessage that was sent.</param>
         public async void Receive(PagesPerDocumentErrorMessage theMessage)
         {
             await HandlePagesPerDocumentErrorMessage(theMessage);
+        }
+
+        /// <summary>
+        /// Handles OperationErrorMessage that are sent.
+        /// </summary>
+        /// <param name="theMessage">The OperationErrorMessage that was sent.</param>
+        public async void Receive(OperationErrorMessage theMessage)
+        {
+            await HandleOperationErrorMessage(theMessage);
         }
         #endregion
 
@@ -540,6 +563,8 @@ namespace Scans_Mover.ViewModels
 
             await mboxView.ShowDialog(_parentWindow);
         }
+
+        
 
     }
 }

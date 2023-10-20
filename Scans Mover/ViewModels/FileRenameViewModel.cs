@@ -156,7 +156,7 @@ namespace Scans_Mover.ViewModels
 
         public async void WindowOpened(object? sender, EventArgs e)
         {
-            await FileAccessService.LoadDefaultApplicationAsync(_fileName);
+            await FileAccessService.LoadDefaultApplicationAsync(_fileName, _theMessenger);
             _currentWindow.FindControl<TextBox>("tbxFileName")?.Focus();
         }
 
