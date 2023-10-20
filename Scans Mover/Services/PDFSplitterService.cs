@@ -45,9 +45,9 @@ namespace Scans_Mover.Services
             List<string> pdfsToRename = new List<string>();
             List<Task> pdfsToSave = new List<Task>();
 
-            using (PdfDocument theDocument = await FileAccessService.LoadPDFDocumentAsync(fileName, theMessenger))
+            using (PdfDocument? theDocument = await FileAccessService.LoadPDFDocumentAsync(fileName, theMessenger))
             {
-                if ((theDocument.NumberOfPages % viewModel.PagesPerDocument) == 0)
+                if ((theDocument?.NumberOfPages % viewModel.PagesPerDocument) == 0)
                 {
                     for (int i = 0; i < theDocument.NumberOfPages; i++)
                     {
