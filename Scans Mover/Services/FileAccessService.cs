@@ -77,9 +77,10 @@ namespace Scans_Mover.Services
             {
                 try
                 {
-                    Stream theStream = File.OpenRead(fileName);
-                    newSettings = await JsonSerializer.DeserializeAsync<Settings>(theStream) ?? new Settings();
-                    theStream.Close();
+                    using (Stream theStream = File.OpenRead(fileName))
+                    {
+                        newSettings = await JsonSerializer.DeserializeAsync<Settings>(theStream) ?? new Settings();
+                    }
                 }
                 catch (Exception ex)
                 {

@@ -6,6 +6,7 @@
         xmlns:custom="clr-namespace:Scans_Mover.Components"
         mc:Ignorable="d" d:DesignWidth="550" d:DesignHeight="305"
         x:Class="Scans_Mover.Views.MoverView"
+        x:DataType="vm:MoverViewModel"
         Height="305"
         Width="550"
         MinWidth="550"

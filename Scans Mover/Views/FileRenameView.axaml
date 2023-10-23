@@ -2,10 +2,12 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="using:Scans_Mover.ViewModels"
         mc:Ignorable="d" d:DesignWidth="325" d:DesignHeight="145"
         MinWidth="325" MinHeight="145"
         Width="325" Height="145"
         x:Class="Scans_Mover.Views.FileRenameView"
+        x:DataType="vm:FileRenameViewModel"
         Title="Rename File"
         KeyboardNavigation.TabNavigation="Continue"
         WindowStartupLocation="CenterOwner">
