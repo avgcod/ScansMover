@@ -66,7 +66,6 @@ namespace Scans_Mover.ViewModels
         [NotifyCanExecuteChangedFor(nameof(BatchSplitCommand))]
         public string _prefix = string.Empty;
         public string PrefixExample => Prefix + " batch";
-
         [ObservableProperty]
         private DateTime _specifiedDate = DateTime.Now.AddDays(-1);
         public bool HasSkippedFiles { get; set; } = false;
@@ -176,7 +175,6 @@ namespace Scans_Mover.ViewModels
 
             Busy = false;
         }
-
         [RelayCommand(CanExecute = nameof(CanMove))]
         public async Task MoveDeliveries()
         {
@@ -204,7 +202,6 @@ namespace Scans_Mover.ViewModels
 
             Busy = false;
         }
-
         #endregion
 
         /// <summary>
@@ -319,7 +316,6 @@ namespace Scans_Mover.ViewModels
         {
             await FileAccessService.SaveSettingsAsync(Settings, _settingsFile, _theMessenger);
         }
-
         #endregion
 
         #region Change Methods
@@ -462,7 +458,6 @@ namespace Scans_Mover.ViewModels
             ChangeDocumentMinimum();
 
         }
-
         #endregion
 
         #region Message Handling

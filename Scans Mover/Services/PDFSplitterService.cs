@@ -9,6 +9,7 @@ using UglyToad.PdfPig.Content;
 using UglyToad.PdfPig.Writer;
 using UglyToad.PdfPig;
 using CommunityToolkit.Mvvm.Messaging;
+using System.Reflection;
 
 namespace Scans_Mover.Services
 {
@@ -22,7 +23,7 @@ namespace Scans_Mover.Services
         {
             List<string> pdfsToRename = new List<string>();
             IEnumerable<FileInfo> theFiles = await FileAccessService.GetFilesAsync(viewModel.MainFolder, theMessenger);
-            theFiles = await Task.Run(() => theFiles.Where(x => x.Name.ToLower().Contains(viewModel.Prefix.ToLower() + " batch")).ToList());
+            theFiles = await Task.Run(() => theFiles.Where(x => x.Name.ToLower().Contains(viewModel.Prefix.ToLower() + " batch")));
             foreach (FileInfo theInfo in theFiles)
             {
                 pdfsToRename.AddRange(await SplitPDFAsync(theInfo.FullName, viewModel, theMessenger));
@@ -155,20 +156,31 @@ namespace Scans_Mover.Services
             string text = string.Empty;
             if (currentScanType != ScanType.Shipping)
             {
-                await Task.Run(async () =>
+                IEnumerable<Word> pageWords = await Task.Run(() => thePage.GetWords());
+                foreach (Word word in pageWords)
                 {
-                    List<Word> pageWords = await Task.Run(() => thePage.GetWords().ToList());
+                    text += word.Text + " ";
+                }
+                //await Task.Run(async () =>
+                //{
 
-                    Parallel.For(0, pageWords.Count, index =>
-                    {
-                        text += pageWords[index].Text + " ";
-                    });
+                //    foreach (Word word in pageWords)
+                //    {
+                //        text += word.Text + " ";
+                //    }
 
-                    for (int i = 0; i < pageWords.Count; i++)
-                    {
-                        text += pageWords[i].Text + " ";
-                    }
-                });
+                //    List<Word> pageWords = await Task.Run(() => thePage.GetWords());
+
+                //    Parallel.For(0, pageWords.Count, index =>
+                //    {
+                //        text += pageWords[index].Text + " ";
+                //    });
+
+                //    for (int i = 0; i < pageWords.Count; i++)
+                //    {
+                //        text += pageWords[i].Text + " ";
+                //    }
+                //});
             }
             return text;
         }

@@ -316,7 +316,7 @@ namespace Scans_Mover.Services
         {
             try
             {
-                return await Task.Run(() => new DirectoryInfo(rootDirectory).GetFiles().ToList());
+                return await Task.Run(() => new DirectoryInfo(rootDirectory).GetFiles());
             }
             catch (Exception ex)
             {
