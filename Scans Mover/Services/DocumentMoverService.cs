@@ -21,7 +21,7 @@ namespace Scans_Mover.Services
             List<string> noFoldersFound = new List<string>();
             IEnumerable<FileInfo> theFiles = await FileAccessService.GetFilesAsync(theModel.MainFolder, theMessenger);
             List<string> moveLog = new List<string>();
-            theFiles = await Task.Run(() => theFiles.Where(x => x.Name.StartsWith(theModel.Prefix) && !x.Name.ToLower().Contains("batch")).ToList());
+            theFiles = await Task.Run(() => theFiles.Where(x => x.Name.StartsWith(theModel.Prefix) && !x.Name.ToLower().Contains("batch")));
             string rootDestination = GetRootDestination(theModel);
             string finalDestination = string.Empty;
             string newFileName = string.Empty;
@@ -167,14 +167,14 @@ namespace Scans_Mover.Services
             {
                 double rmaMin;
                 double rmaMax;
-                List<string> theRMAFolders = GetRMAFolders(theModel, theMessenger).ToList();
-                for (int i = 0; i < theRMAFolders.Count; i++)
+                IEnumerable<string> theRMAFolders = GetRMAFolders(theModel, theMessenger);
+                foreach (string currentFolder in theRMAFolders)
                 {
-                    rmaMin = double.Parse(theRMAFolders[i].Split(' ')[1].Split('-')[0]);
+                    rmaMin = double.Parse(currentFolder.Split(' ')[1].Split('-')[0]);
                     rmaMax = rmaMin + 99;
                     if (rmaNum >= rmaMin && rmaNum <= rmaMax)
                     {
-                        return Path.Combine(theModel.RMAsFolder, theRMAFolders[i]);
+                        return Path.Combine(theModel.RMAsFolder, currentFolder);
                     }
                 }
             }

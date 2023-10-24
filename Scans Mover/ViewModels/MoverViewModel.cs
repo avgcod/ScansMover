@@ -135,7 +135,6 @@ namespace Scans_Mover.ViewModels
                 SavePrefix();
                 SaveDocumentMinimum();
                 SavePagesPerDocument();
-                SaveDocumentMinimum();
 
 
                 SelectedScanType = (ScanType)Enum.Parse(typeof(ScanType), typeText);
@@ -244,8 +243,6 @@ namespace Scans_Mover.ViewModels
             UpdateProperties();
 
         }
-
-
 
         #region Save Methods
         /// <summary>
@@ -434,6 +431,9 @@ namespace Scans_Mover.ViewModels
             Settings.ShippingLogsFolder = ShippingLogsFolder;
             Settings.ServiceFolder = ServiceFolder;
             Settings.Tolerance = Tolerance;
+            SavePrefix();
+            SaveDocumentMinimum();
+            SavePagesPerDocument();
         }
         /// <summary>
         /// Updates all observable properties.
