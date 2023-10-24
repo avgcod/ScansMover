@@ -23,7 +23,6 @@ namespace Scans_Mover.ViewModels
         #endregion
 
         #region Properties
-        private bool _filesMoved = false;
         [ObservableProperty]
         public int _pagesPerDocument = 0;
         public Settings Settings { get; set; } = new Settings();
@@ -54,7 +53,7 @@ namespace Scans_Mover.ViewModels
         [ObservableProperty]
         [NotifyCanExecuteChangedFor(nameof(BatchSplitCommand))]
         [NotifyCanExecuteChangedFor(nameof(MoveDeliveriesCommand))]
-        private bool _busy = true;
+        private bool _busy = false;
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(DocumentMinimum))]
         private bool _documentHasMinimum = false;
@@ -66,11 +65,12 @@ namespace Scans_Mover.ViewModels
         [NotifyPropertyChangedFor(nameof(PrefixExample))]
         [NotifyCanExecuteChangedFor(nameof(BatchSplitCommand))]
         public string _prefix = string.Empty;
-        private string PrefixExample => Prefix + " batch";
+        public string PrefixExample => Prefix + " batch";
 
         [ObservableProperty]
         private DateTime _specifiedDate = DateTime.Now.AddDays(-1);
         public bool HasSkippedFiles { get; set; } = false;
+        public bool FilesMoved { get; set; } = false;
         #endregion
 
         public MoverViewModel(Window parentWindow, IMessenger theMessenger, string settingsFile)
@@ -84,7 +84,7 @@ namespace Scans_Mover.ViewModels
             _theMessenger.Register<MoveLogMessage>(this);
             _theMessenger.Register<PagesPerDocumentErrorMessage>(this);
             _theMessenger.Register<OperationErrorMessage>(this);
-            _parentWindow.Opened += OnWindowOpened;
+            _parentWindow.Loaded += OnWindowLoaded;
             _parentWindow.Closing += OnWindowClosing;
         }
 
@@ -182,11 +182,12 @@ namespace Scans_Mover.ViewModels
         public async Task MoveDeliveries()
         {
             Busy = true;
-            _filesMoved = false;
+
+            FilesMoved = false;
 
             IEnumerable<string> filesNeedingFolders = await DocumentMoverService.MoveToFolderAsync(this, _theMessenger);
 
-            if(_filesMoved)
+            if (FilesMoved)
             {
                 if (filesNeedingFolders.Any())
                 {
@@ -199,7 +200,7 @@ namespace Scans_Mover.ViewModels
             }
             else
             {
-                await DisplayMessageBoxAsync("No Files Found To Move.");
+                await DisplayMessageBoxAsync("No Files Found To Move or Folders Don't Exist for Found Files.");
             }
 
             Busy = false;
@@ -208,32 +209,11 @@ namespace Scans_Mover.ViewModels
         #endregion
 
         /// <summary>
-        /// Loads the program settings.
-        /// </summary>
-        private async Task LoadSettingsAsync()
-        {
-            Settings = await FileAccessService.LoadSettingsAsync(_settingsFile, _theMessenger);
-
-            if (!string.IsNullOrEmpty(Settings.MainFolder))
-            {
-                UpdateProperties();
-            }
-            else
-            {
-                SelectedScanType = ScanType.Delivery;
-                ChangeHasDate();
-                ChangeHasMinimum();
-            }
-
-            Busy = false;
-        }
-
-        /// <summary>
         /// Loads all information when the window is opened.
         /// </summary>
         /// <param name="sender">Window sender.</param>
         /// <param name="e">Event arguments.</param>
-        public async void OnWindowOpened(object? sender, EventArgs e)
+        public async void OnWindowLoaded(object? sender, EventArgs e)
         {
             await LoadSettingsAsync();
         }
@@ -249,6 +229,23 @@ namespace Scans_Mover.ViewModels
             UpdateSettings();
             await SaveSettingsAsync();
         }
+
+        /// <summary>
+        /// Loads the program settings.
+        /// </summary>
+        private async Task LoadSettingsAsync()
+        {
+            Busy = true;
+
+            Settings = await FileAccessService.LoadSettingsAsync(_settingsFile, _theMessenger);
+
+            Busy = false;
+
+            UpdateProperties();
+
+        }
+
+
 
         #region Save Methods
         /// <summary>
@@ -443,20 +440,26 @@ namespace Scans_Mover.ViewModels
         /// </summary>
         private void UpdateProperties()
         {
-            MainFolder = Settings.MainFolder;
-            DeliveriesFolder = Settings.DeliveriesFolder;
-            RMAsFolder = Settings.RMAsFolder;
-            ShippingLogsFolder = Settings.ShippingLogsFolder;
-            ServiceFolder = Settings.ServiceFolder;
+            if (!string.IsNullOrEmpty(Settings.MainFolder))
+            {
+                MainFolder = Settings.MainFolder;
+                DeliveriesFolder = Settings.DeliveriesFolder;
+                RMAsFolder = Settings.RMAsFolder;
+                ShippingLogsFolder = Settings.ShippingLogsFolder;
+                ServiceFolder = Settings.ServiceFolder;
+                Tolerance = Settings.Tolerance;
+                Prefix = Settings.DeliveriesPrefix;
+            }
+            else
+            {
+                ChangePrefix();
+            }
+
             SelectedScanType = ScanType.Delivery;
-            Tolerance = Settings.Tolerance;
-            ChangePrefix();
             ChangeHasDate();
-            ChangeHasMinimum();
             ChangePagesPerDocument();
-            ChangeDocumentMinimum();
             ChangeHasMinimum();
-            Busy = false;
+            ChangeDocumentMinimum();
 
         }
 
@@ -500,7 +503,7 @@ namespace Scans_Mover.ViewModels
         /// <param name="theMessage">The LogMessage to process.</param>
         private async Task HandleMoveLogMessage(MoveLogMessage theMessage)
         {
-            _filesMoved = true;
+            FilesMoved = true;
             await FileAccessService.SaveLogAsync(theMessage.LogInfo, theMessage.LogFile, _theMessenger);
             await FileAccessService.LoadDefaultApplicationAsync(theMessage.LogFile, _theMessenger);
         }
@@ -564,7 +567,7 @@ namespace Scans_Mover.ViewModels
             await mboxView.ShowDialog(_parentWindow);
         }
 
-        
+
 
     }
 }
