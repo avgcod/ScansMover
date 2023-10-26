@@ -31,8 +31,8 @@ namespace Scans_Mover.Services
             {
                 foreach (FileInfo theInfo in theFiles)
                 {
-                    finalDestination = GetFinalDestination(theModel, theInfo.Name, theMessenger);
-                    if (FileAccessService.DirectoryExists(finalDestination, theMessenger))
+                    finalDestination = await GetFinalDestinationAsync(theModel, theInfo.Name, theMessenger);
+                    if (await FileAccessService.DirectoryExistsAsync(finalDestination, theMessenger))
                     {
                         newFileName = Path.Combine(finalDestination, theInfo.Name);
                         if (!await FileAccessService.FileExistsAsync(newFileName, theMessenger))
@@ -118,7 +118,7 @@ namespace Scans_Mover.Services
         /// </summary>
         /// <param name="fileName">The file name.</param>
         /// <returns>Destination folder.</returns>
-        private static string GetFinalDestination(MoverViewModel theModel, string fileName, IMessenger theMessenger)
+        private async static Task<string> GetFinalDestinationAsync(MoverViewModel theModel, string fileName, IMessenger theMessenger)
         {
             if (theModel.SelectedScanType == ScanType.Delivery)
             {
@@ -126,7 +126,7 @@ namespace Scans_Mover.Services
             }
             else if (theModel.SelectedScanType == ScanType.RMA)
             {
-                return GetRMADestination(theModel, fileName, theMessenger);
+                return await GetRMADestinationAsync(theModel, fileName, theMessenger);
             }
             else if (theModel.SelectedScanType == ScanType.Shipping)
             {
@@ -134,11 +134,11 @@ namespace Scans_Mover.Services
             }
             else if (theModel.SelectedScanType == ScanType.PO)
             {
-                return GetPODestination(theModel, fileName, theMessenger);
+                return await GetPODestinationAsync(theModel, fileName, theMessenger);
             }
             else
             {
-                return GetServiceDestination(theModel, fileName, theMessenger);
+                return await GetServiceDestinationAsync(theModel, fileName, theMessenger);
             }
         }
 
@@ -157,47 +157,22 @@ namespace Scans_Mover.Services
         }
 
         /// <summary>
-        /// Gets the destination of an RMA document.
-        /// </summary>
-        /// <param name="fileName">File name of the RMA document.</param>
-        /// <returns>Destination of the RMA document.</returns>
-        private static string GetRMADestination(MoverViewModel theModel, string fileName, IMessenger theMessenger)
-        {
-            if (double.TryParse(fileName.Replace(theModel.Prefix, "").Replace(".pdf", ""), out double rmaNum))
-            {
-                double rmaMin;
-                double rmaMax;
-                IEnumerable<string> theRMAFolders = GetRMAFolders(theModel, theMessenger);
-                foreach (string currentFolder in theRMAFolders)
-                {
-                    rmaMin = double.Parse(currentFolder.Split(' ')[1].Split('-')[0]);
-                    rmaMax = rmaMin + 99;
-                    if (rmaNum >= rmaMin && rmaNum <= rmaMax)
-                    {
-                        return Path.Combine(theModel.RMAsFolder, currentFolder);
-                    }
-                }
-            }
-            return string.Empty;
-        }
-
-        /// <summary>
         /// Gets the destination of a PO document.
         /// </summary>
         /// <param name="fileName">File name of the PO document.</param>
         /// <returns>Destination of the PO document.</returns>
-        private static string GetPODestination(MoverViewModel theModel, string fileName, IMessenger theMessenger)
+        private async static Task<string> GetPODestinationAsync(MoverViewModel theModel, string fileName, IMessenger theMessenger)
         {
             string deliveryNum = fileName.Replace(theModel.Prefix, "").Replace(".pdf", "");
-            string poDestination = CheckDeliveryDestinations(theModel, deliveryNum, DateTime.Now, theMessenger);
+            string poDestination = await CheckDeliveryDestinationsAsync(theModel, deliveryNum, DateTime.Now, theMessenger);
 
             if (poDestination == string.Empty)
             {
-                poDestination = CheckDeliveryDestinations(theModel, deliveryNum, DateTime.Now.AddMonths(-1), theMessenger);
+                poDestination = await CheckDeliveryDestinationsAsync(theModel, deliveryNum, DateTime.Now.AddMonths(-1), theMessenger);
 
                 if (poDestination == string.Empty)
                 {
-                    poDestination = CheckDeliveryDestinations(theModel, deliveryNum, DateTime.Now.AddMonths(-2), theMessenger);
+                    poDestination = await CheckDeliveryDestinationsAsync(theModel, deliveryNum, DateTime.Now.AddMonths(-2), theMessenger);
                 }
             }
 
@@ -209,35 +184,25 @@ namespace Scans_Mover.Services
         /// </summary>
         /// <param name="fileName">File name of the PO document.</param>
         /// <returns>Destination of the service document.</returns>
-        private static string GetServiceDestination(MoverViewModel theModel, string fileName, IMessenger theMessenger)
+        private async static Task<string> GetServiceDestinationAsync(MoverViewModel theModel, string fileName, IMessenger theMessenger)
         {
             string deliveryNum = fileName.Split("_")[3];
             DateTime theDT = DateTime.Now;
-            string serviceDestination = CheckDeliveryDestinations(theModel, deliveryNum, theDT, theMessenger);
+            string serviceDestination = await CheckDeliveryDestinationsAsync(theModel, deliveryNum, theDT, theMessenger);
 
             if (serviceDestination == string.Empty)
             {
                 theDT = theDT.AddMonths(-1);
-                serviceDestination = CheckDeliveryDestinations(theModel, deliveryNum, theDT, theMessenger);
+                serviceDestination = await CheckDeliveryDestinationsAsync(theModel, deliveryNum, theDT, theMessenger);
 
                 if (serviceDestination == string.Empty)
                 {
                     theDT = theDT.AddMonths(-1);
-                    serviceDestination = CheckDeliveryDestinations(theModel, deliveryNum, theDT, theMessenger);
+                    serviceDestination = await CheckDeliveryDestinationsAsync(theModel, deliveryNum, theDT, theMessenger);
                 }
             }
 
             return serviceDestination;
-        }
-
-        /// <summary>
-        /// Gets the abbreviated month name from the number of a month.
-        /// </summary>
-        /// <param name="monthNum">Month number.</param>
-        /// <returns>Abbreviated month name.</returns>
-        private static string GetAbbreviatedMonth(string monthNum)
-        {
-            return CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(int.Parse(monthNum));
         }
 
         /// <summary>
@@ -313,15 +278,6 @@ namespace Scans_Mover.Services
         /// Gets the available RMA folders.
         /// </summary>
         /// <returns>IEnumerable of RMA folder names.</returns>
-        private static IEnumerable<string> GetRMAFolders(MoverViewModel theModel, IMessenger theMessenger)
-        {
-            return FileAccessService.GetSubDirectories(theModel.Settings.RMAsFolder, theMessenger);
-        }
-
-        /// <summary>
-        /// Gets the available RMA folders.
-        /// </summary>
-        /// <returns>IEnumerable of RMA folder names.</returns>
         private static async Task<IEnumerable<string>> GetRMAFoldersAsync(MoverViewModel theModel, IMessenger theMessenger)
         {
             return await FileAccessService.GetSubDirectoriesAsync(theModel.RMAsFolder, theMessenger);
@@ -347,7 +303,7 @@ namespace Scans_Mover.Services
         /// <param name="deliveryNum">The delivery number to check.</param>
         /// <param name="month">The month to look in.</param>
         /// <returns>The folder location if found or an empty string if not found.</returns>
-        private static string CheckDeliveryDestinations(MoverViewModel theModel, string deliveryNum, DateTime month, IMessenger theMessenger)
+        private async static Task<string> CheckDeliveryDestinationsAsync(MoverViewModel theModel, string deliveryNum, DateTime month, IMessenger theMessenger)
         {
             int days = DateTime.DaysInMonth(month.Year, month.Month) + 1;
             string deliveryDestination = string.Empty;
@@ -355,15 +311,10 @@ namespace Scans_Mover.Services
 
             for (int i = 1; i < days; i++)
             {
-                //deliveryDestination = Path.Combine(_moverViewModel.Settings.DeliveriesFolder, month.Year.ToString() +
-                //GetFormattedMonthNumber(month.Month) + " " +
-                //GetMonthName(month.Month), GetMonthName(month.Month) + " " + GetFormattedDay(i),
-                //deliveryNum);
-
                 currentDate = new DateTime(month.Year, month.Month, i);
                 deliveryDestination = GetDeliveryDestination(theModel, deliveryNum, currentDate);
 
-                if (FileAccessService.DirectoryExists(deliveryDestination, theMessenger))
+                if (await FileAccessService.DirectoryExistsAsync(deliveryDestination, theMessenger))
                 {
                     return deliveryDestination;
                 }
