@@ -36,6 +36,7 @@ namespace Scans_Mover.ViewModels
 
         //TODO: UpdateExampleText
         [ObservableProperty]
+        [NotifyCanExecuteChangedFor(nameof(RenameCommand))]
         private string _callNum = string.Empty;
 
         [ObservableProperty]
@@ -70,6 +71,7 @@ namespace Scans_Mover.ViewModels
             if (CurrentType == ScanType.Service)
             {
                 IsService = true;
+                TypeText = "Delivery";
             }
 
             SetNameLength(numLength);

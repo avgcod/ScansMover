@@ -326,47 +326,6 @@ namespace Scans_Mover.Services
         }
 
         /// <summary>
-        /// Gets a proper page title with invalid characters removed.
-        /// Also verifies the title fits the current length and minimum requirements.
-        /// </summary>
-        /// <param name="pageTitle">Original page title.</param>
-        /// <returns>Cleaned page title or empty page title if the title does not meet the requirements.</returns>
-        //private string GetPageTitle(string pageTitle, double numMin, ScanType currentScanType)
-        //{
-        //    if (currentScanType != ScanType.Shipping)
-        //    {
-        //        string[] splitted = pageTitle.Split(' ');
-        //        string title = string.Empty;
-        //        for (int i = 0; i < splitted.Length; i++)
-        //        {
-        //            if (splitted[i].All(x => char.IsLetterOrDigit(x)) && int.TryParse(splitted[i], out int result) && result.ToString().Length == numMin.ToString().Length && result >= numMin)
-        //            {
-        //                title = splitted[i].Replace('\\', '-').Replace('/', '-').Replace(':', '-').Replace('*', '-').Replace('?', '-').Replace('"', '-').Replace('<', '-').Replace('>', '-').Replace('|', '-');
-
-        //                int titleNum;
-        //                if (int.TryParse(title, out titleNum))
-        //                {
-        //                    if (titleNum > numMin && (titleNum - numMin > 130))
-        //                    {
-        //                        return string.Empty;
-        //                    }
-        //                    else if (titleNum < numMin && (titleNum - numMin < -130))
-        //                    {
-        //                        return string.Empty;
-        //                    }
-        //                    else
-        //                    {
-        //                        return title;
-        //                    }
-        //                }
-        //            }
-        //        }
-        //    }
-
-        //    return string.Empty;
-        //}
-
-        /// <summary>
         /// Checks if a directory exists.
         /// </summary>
         /// <param name="directoryLocation">The directory to check.</param>
