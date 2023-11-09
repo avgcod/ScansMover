@@ -7,7 +7,10 @@
         x:Class="Scans_Mover.Views.ErrorMessageBoxView"
         x:DataType="vm:ErrorMessageBoxViewModel"
         Title="Error Occurred"
-        SizeToContent="WidthAndHeight"
+        MinWidth="325"
+        MinHeight="250"
+        Width="325"
+        Height="250"
         SystemDecorations="BorderOnly"
         WindowStartupLocation="CenterOwner">
 
