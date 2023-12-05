@@ -1,43 +1,65 @@
-<Window xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:vm="using:Scans_Mover.ViewModels"
-        mc:Ignorable="d" d:DesignWidth="325" d:DesignHeight="250"
-        x:Class="Scans_Mover.Views.ErrorMessageBoxView"
-        x:DataType="vm:ErrorMessageBoxViewModel"
-        Title="Error Occurred"
-        MinWidth="325"
-        MinHeight="250"
-        Width="325"
-        Height="250"
-        SystemDecorations="BorderOnly"
-        WindowStartupLocation="CenterOwner">
+<Window
+    x:Class="Scans_Mover.Views.ErrorMessageBoxView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="using:Scans_Mover.ViewModels"
+    Title="Error Occurred"
+    Width="325"
+    Height="250"
+    MinWidth="325"
+    MinHeight="250"
+    d:DesignHeight="250"
+    d:DesignWidth="325"
+    x:DataType="vm:ErrorMessageBoxViewModel"
+    SystemDecorations="BorderOnly"
+    WindowStartupLocation="CenterOwner"
+    mc:Ignorable="d">
 
-  <Grid RowDefinitions="auto,auto,auto,auto,auto,auto" ColumnDefinitions="auto"
+    <Grid
         Margin="5"
-        HorizontalAlignment="Center">
+        HorizontalAlignment="Center"
+        ColumnDefinitions="auto"
+        RowDefinitions="auto,auto,auto,auto,auto,auto">
 
-    <TextBlock Grid.Row="0" Grid.Column="0" HorizontalAlignment="Center"
-               Text="There was an error during operation."/>
+        <TextBlock
+            Grid.Row="0"
+            Grid.Column="0"
+            HorizontalAlignment="Center"
+            Text="There was an error during operation." />
 
-    <TextBlock Grid.Row="1" Grid.Column="0" Text="Error Type:"
-               HorizontalAlignment="Center"/>
-    <TextBox Grid.Row="2" Grid.Column="0" Text="{Binding ErrorType}"
-             MinWidth="150"/>
+        <TextBlock
+            Grid.Row="1"
+            Grid.Column="0"
+            HorizontalAlignment="Center"
+            Text="Error Type:" />
+        <TextBox
+            Grid.Row="2"
+            Grid.Column="0"
+            MinWidth="150"
+            Text="{Binding ErrorType}" />
 
-    <TextBlock Grid.Row="3" Grid.Column="0"
-               HorizontalAlignment="Center"
-               Text="Error Message:"/>
-    <TextBox Grid.Row="4" Grid.Column="0" Text="{Binding ErrorMessage}"
-             MinWidth="150"
-             MinHeight="100"
-             Margin="0 0 0 5"
-             TextWrapping="Wrap"/>
-    <Button Grid.Row="6" Grid.Column="0"
-            Content="OK" Command="{Binding OKCommand}"
+        <TextBlock
+            Grid.Row="3"
+            Grid.Column="0"
+            HorizontalAlignment="Center"
+            Text="Error Message:" />
+        <TextBox
+            Grid.Row="4"
+            Grid.Column="0"
+            MinWidth="150"
+            MinHeight="100"
+            Margin="0,0,0,5"
+            Text="{Binding ErrorMessage}"
+            TextWrapping="Wrap" />
+        <Button
+            Grid.Row="6"
+            Grid.Column="0"
             HorizontalAlignment="Right"
-            VerticalAlignment="Bottom"/>
+            VerticalAlignment="Bottom"
+            Command="{Binding OKCommand}"
+            Content="OK" />
 
-  </Grid>
+    </Grid>
 </Window>

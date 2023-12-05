@@ -23,10 +23,13 @@ namespace Scans_Mover.Services
             List<string> pdfsToRename = new List<string>();
             IEnumerable<FileInfo> theFiles = await FileAccessService.GetFilesAsync(viewModel.MainFolder, theMessenger);
             theFiles = theFiles.Where(x => x.Name.ToLower().Contains(viewModel.Prefix.ToLower() + " batch"));
+            viewModel.ProcessingText = "Reading Batch File(s). Please Wait.";
             foreach (FileInfo theInfo in theFiles)
             {
+                viewModel.ProcessingText = $"Splitting {theInfo.Name}. Please Wait.";
                 pdfsToRename.AddRange(await SplitPDFAsync(theInfo.FullName, viewModel, theMessenger));
             }
+            viewModel.ProcessingText = "Finishing Up. Please Wait.";
             return pdfsToRename;
         }
 
@@ -49,7 +52,7 @@ namespace Scans_Mover.Services
             {
                 if ((theDocument?.NumberOfPages % viewModel.PagesPerDocument) == 0)
                 {
-                    for (int i = 0; i < theDocument?.NumberOfPages; i++)
+                    for (int i = 0; i < theDocument!.NumberOfPages; i++)
                     {
                         if (viewModel.DocumentHasMinimum)
                         {

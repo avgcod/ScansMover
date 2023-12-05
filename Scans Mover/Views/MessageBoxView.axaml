@@ -1,33 +1,39 @@
-<Window xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:vm="using:Scans_Mover.ViewModels"
-        mc:Ignorable="d" d:DesignWidth="180" d:DesignHeight="100"
-        x:Class="Scans_Mover.Views.MessageBoxView"
-        x:DataType="vm:MessageBoxViewModel"
-        Title="Notice"
-        WindowStartupLocation="CenterOwner"
-        SystemDecorations="BorderOnly"
-        MinWidth="180"
-        MinHeight="100"
-        Width="180"
-        Height="100">
-  
-  <StackPanel Orientation="Vertical"
-              Spacing="10"
-              Margin="0 5 0 0">
-    
-    <TextBlock Text="{Binding MessageText}"
-               HorizontalAlignment="Center"
-               VerticalAlignment="Center"/>
-    
-    <Button Content="OK"
-            HorizontalContentAlignment="Center"
+<Window
+    x:Class="Scans_Mover.Views.MessageBoxView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="using:Scans_Mover.ViewModels"
+    Title="Notice"
+    Width="180"
+    Height="100"
+    MinWidth="180"
+    MinHeight="100"
+    d:DesignHeight="100"
+    d:DesignWidth="180"
+    x:DataType="vm:MessageBoxViewModel"
+    SystemDecorations="BorderOnly"
+    WindowStartupLocation="CenterOwner"
+    mc:Ignorable="d">
+
+    <StackPanel
+        Margin="0,5,0,0"
+        Orientation="Vertical"
+        Spacing="10">
+
+        <TextBlock
             HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Text="{Binding MessageText}" />
+
+        <Button
+            Width="50"
+            Margin="0,0,5,0"
+            HorizontalAlignment="Center"
+            HorizontalContentAlignment="Center"
             Command="{Binding OKCommand}"
-            Margin="0 0 5 0"
-            Width="50"/>
-    
-  </StackPanel>
+            Content="OK" />
+
+    </StackPanel>
 </Window>

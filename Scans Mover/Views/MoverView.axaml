@@ -1,251 +1,316 @@
-<Window xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="using:Scans_Mover.ViewModels"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:custom="clr-namespace:Scans_Mover.Components"
-        mc:Ignorable="d" d:DesignWidth="550" d:DesignHeight="305"
-        x:Class="Scans_Mover.Views.MoverView"
-        x:DataType="vm:MoverViewModel"
-        Height="305"
-        Width="550"
-        MinWidth="550"
-        MinHeight="305"
-        Title="Scans Mover"
-        WindowStartupLocation="CenterScreen"
-        Icon="/Assets/Gas-trolley-5.ico">
-  
+<Window
+    x:Class="Scans_Mover.Views.MoverView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:custom="clr-namespace:Scans_Mover.Components"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="using:Scans_Mover.ViewModels"
+    Title="Scans Mover"
+    Width="550"
+    Height="305"
+    MinWidth="550"
+    MinHeight="305"
+    d:DesignHeight="305"
+    d:DesignWidth="550"
+    x:DataType="vm:MoverViewModel"
+    Icon="/Assets/Gas-trolley-5.ico"
+    WindowStartupLocation="CenterScreen"
+    mc:Ignorable="d">
 
-  <Grid Margin="5 5 5 5">
 
-    <StackPanel VerticalAlignment="Center"
-                IsVisible="{Binding Busy}"
-                Grid.ColumnSpan="2">
+    <Grid Margin="5,5,5,5">
 
-      <TextBlock Text="Processing. Please Wait"
-                 HorizontalAlignment="Center"/>
+        <StackPanel
+            Grid.ColumnSpan="2"
+            VerticalAlignment="Center"
+            IsVisible="{Binding Busy}">
 
-      <custom:LoadingSpinner Margin="0 10 0 0"
-                             IsLoading="{Binding Busy}"
-                             Diameter="150"
-                             Thickness="5"
-                             Color="CadetBlue"/>
+            <TextBlock HorizontalAlignment="Center" Text="{Binding ProcessingText}" />
 
-    </StackPanel>
+            <custom:LoadingSpinner
+                Margin="0,10,0,0"
+                Diameter="150"
+                IsLoading="{Binding Busy}"
+                Thickness="5"
+                Color="CadetBlue" />
 
-    <Grid IsVisible="{Binding !Busy}" ColumnDefinitions="auto,auto">
+        </StackPanel>
 
-      <Border Grid.Column="0" BorderThickness="0 0 1 0" BorderBrush="LightBlue">
-        <Grid RowDefinitions="auto,auto,auto,auto,auto,auto">
+        <Grid ColumnDefinitions="auto,auto" IsVisible="{Binding !Busy}">
 
-          <TextBlock Text="Scan Type" Grid.Row="0" FontWeight="Heavy" FontSize="18"
-                     Margin="0 15 10 20"/>
+            <Border
+                Grid.Column="0"
+                BorderBrush="LightBlue"
+                BorderThickness="0,0,1,0">
+                <Grid RowDefinitions="auto,auto,auto,auto,auto,auto">
 
-          <RadioButton Grid.Row="1"
-                           Content="Delivery"
-                           GroupName="FileMovingGroup"
-                           Command="{Binding SplitTypeCheckedCommand}"
-                           CommandParameter="Delivery"
-                           IsChecked="True"/>
+                    <TextBlock
+                        Grid.Row="0"
+                        Margin="0,15,10,20"
+                        FontSize="18"
+                        FontWeight="Heavy"
+                        Text="Scan Type" />
 
-          <RadioButton Grid.Row="2"
-                     Content="Shipping"
-                     Command="{Binding SplitTypeCheckedCommand}"
-                     CommandParameter="Shipping"
-                     GroupName="FileMovingGroup"/>
+                    <RadioButton
+                        Grid.Row="1"
+                        Command="{Binding SplitTypeCheckedCommand}"
+                        CommandParameter="Delivery"
+                        Content="Delivery"
+                        GroupName="FileMovingGroup"
+                        IsChecked="True" />
 
-          <RadioButton Grid.Row="3"
-                       Content="RMA"
-                       GroupName="FileMovingGroup"
-                       Command="{Binding SplitTypeCheckedCommand}"
-                       CommandParameter="RMA"/>
+                    <RadioButton
+                        Grid.Row="2"
+                        Command="{Binding SplitTypeCheckedCommand}"
+                        CommandParameter="Shipping"
+                        Content="Shipping"
+                        GroupName="FileMovingGroup" />
 
-          <RadioButton Grid.Row="4"
-                       Content="PO"
-                       GroupName="FileMovingGroup"
-                       Command="{Binding SplitTypeCheckedCommand}"
-                       CommandParameter="PO"/>
+                    <RadioButton
+                        Grid.Row="3"
+                        Command="{Binding SplitTypeCheckedCommand}"
+                        CommandParameter="RMA"
+                        Content="RMA"
+                        GroupName="FileMovingGroup" />
 
-          <RadioButton Grid.Row="5"
-                       Content="Service"
-                       GroupName="FileMovingGroup"
-                       Command="{Binding SplitTypeCheckedCommand}"
-                       CommandParameter="Service"/>
+                    <RadioButton
+                        Grid.Row="4"
+                        Command="{Binding SplitTypeCheckedCommand}"
+                        CommandParameter="PO"
+                        Content="PO"
+                        GroupName="FileMovingGroup" />
+
+                    <RadioButton
+                        Grid.Row="5"
+                        Command="{Binding SplitTypeCheckedCommand}"
+                        CommandParameter="Service"
+                        Content="Service"
+                        GroupName="FileMovingGroup" />
+                </Grid>
+
+            </Border>
+
+            <TabControl Grid.Column="1" HorizontalAlignment="Center">
+
+                <TabItem Header="File Moving">
+
+                    <Grid
+                        Margin="0,20,0,0"
+                        HorizontalAlignment="Center"
+                        RowDefinitions="auto,auto,auto,auto,auto,auto">
+
+
+                        <Button
+                            Grid.Row="0"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Command="{Binding BatchSplitCommand}"
+                            Content="Batch Split" />
+
+                        <TextBlock
+                            Grid.Row="1"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            IsVisible="{Binding DocumentHasDate}"
+                            Text="Scan Date" />
+
+                        <CalendarDatePicker
+                            Grid.Row="2"
+                            HorizontalAlignment="Center"
+                            IsVisible="{Binding DocumentHasDate}"
+                            SelectedDate="{Binding SpecifiedDate}" />
+
+                        <Button
+                            Grid.Row="5"
+                            Margin="0,5,0,0"
+                            HorizontalAlignment="Center"
+                            Command="{Binding MoveDeliveriesCommand}"
+                            Content="Move Files" />
+
+                    </Grid>
+                </TabItem>
+
+                <TabItem Header="Details">
+                    <Grid
+                        Margin="0,5,0,0"
+                        HorizontalAlignment="Center"
+                        ColumnDefinitions="auto,auto,auto,auto,auto"
+                        RowDefinitions="auto,auto,auto,auto,auto">
+
+                        <TextBlock
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            VerticalAlignment="Center"
+                            Text="Prefix:" />
+
+                        <TextBox
+                            Grid.Row="0"
+                            Grid.Column="1"
+                            Grid.ColumnSpan="3"
+                            MinWidth="200"
+                            VerticalAlignment="Center"
+                            Text="{Binding Prefix}" />
+
+                        <TextBlock
+                            Grid.Row="1"
+                            Grid.Column="0"
+                            VerticalAlignment="Center"
+                            FontStyle="Italic"
+                            Text="Example:" />
+
+                        <TextBlock
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            Grid.ColumnSpan="3"
+                            Margin="0,5,0,0"
+                            VerticalAlignment="Center"
+                            Text="{Binding PrefixExample}" />
+
+                        <TextBlock
+                            Grid.Row="2"
+                            Grid.Column="0"
+                            VerticalAlignment="Center"
+                            Text="Pages Per:" />
+
+                        <NumericUpDown
+                            Grid.Row="2"
+                            Grid.Column="1"
+                            Margin="0,5,0,0"
+                            Minimum="1"
+                            Value="{Binding PagesPerDocument}" />
+
+                        <TextBlock
+                            Grid.Row="3"
+                            Grid.Column="0"
+                            VerticalAlignment="Center"
+                            IsVisible="{Binding DocumentHasMinimum}"
+                            Text="Minimum:" />
+
+                        <NumericUpDown
+                            Grid.Row="3"
+                            Grid.Column="1"
+                            Margin="0,5,0,0"
+                            IsVisible="{Binding DocumentHasMinimum}"
+                            Value="{Binding DocumentMinimum}" />
+
+                        <TextBlock
+                            Grid.Row="4"
+                            Grid.Column="0"
+                            VerticalAlignment="Center"
+                            IsVisible="{Binding DocumentHasMinimum}"
+                            Text="Tolerance:" />
+
+                        <NumericUpDown
+                            Grid.Row="4"
+                            Grid.Column="1"
+                            Margin="0,5,0,0"
+                            IsVisible="{Binding DocumentHasMinimum}"
+                            Value="{Binding Tolerance}" />
+
+                    </Grid>
+                </TabItem>
+
+                <TabItem Header="Locations">
+                    <Grid
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        ColumnDefinitions="auto,*"
+                        RowDefinitions="auto,auto,auto,auto,auto,auto">
+
+                        <RadioButton
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            Command="{Binding LocationCheckedCommand}"
+                            CommandParameter="Scans"
+                            Content="Scans:"
+                            GroupName="LocationsGroup"
+                            IsChecked="True" />
+
+                        <TextBox
+                            Grid.Row="0"
+                            Grid.Column="1"
+                            IsReadOnly="True"
+                            Text="{Binding MainFolder}" />
+
+                        <RadioButton
+                            Grid.Row="1"
+                            Grid.Column="0"
+                            VerticalAlignment="Center"
+                            Command="{Binding LocationCheckedCommand}"
+                            CommandParameter="Deliveries"
+                            Content="Deliveries:"
+                            GroupName="LocationsGroup" />
+
+                        <TextBox
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            Margin="0,5,0,0"
+                            IsReadOnly="True"
+                            Text="{Binding DeliveriesFolder}" />
+
+                        <RadioButton
+                            Grid.Row="2"
+                            Grid.Column="0"
+                            VerticalAlignment="Center"
+                            Command="{Binding LocationCheckedCommand}"
+                            CommandParameter="Shipping"
+                            Content="Shipping:"
+                            GroupName="LocationsGroup" />
+
+                        <TextBox
+                            Grid.Row="2"
+                            Grid.Column="1"
+                            Margin="0,5,0,0"
+                            IsReadOnly="True"
+                            Text="{Binding ShippingLogsFolder}" />
+
+                        <RadioButton
+                            Grid.Row="3"
+                            Grid.Column="0"
+                            VerticalAlignment="Center"
+                            Command="{Binding LocationCheckedCommand}"
+                            CommandParameter="RMAs"
+                            Content="RMAs:"
+                            GroupName="LocationsGroup" />
+
+                        <TextBox
+                            Grid.Row="3"
+                            Grid.Column="1"
+                            Margin="0,5,0,0"
+                            IsReadOnly="True"
+                            Text="{Binding RMAsFolder}" />
+
+                        <RadioButton
+                            Grid.Row="4"
+                            Grid.Column="0"
+                            VerticalAlignment="Center"
+                            Command="{Binding LocationCheckedCommand}"
+                            CommandParameter="Service"
+                            Content="Service:"
+                            GroupName="LocationsGroup" />
+
+                        <TextBox
+                            Grid.Row="4"
+                            Grid.Column="1"
+                            MinWidth="200"
+                            Margin="0,5,0,0"
+                            IsReadOnly="True"
+                            Text="{Binding ServiceFolder}" />
+
+                        <Button
+                            Grid.Row="5"
+                            Grid.Column="0"
+                            Grid.ColumnSpan="2"
+                            Margin="0,5,0,0"
+                            HorizontalAlignment="Center"
+                            Command="{Binding ChangeLocationCommand}"
+                            Content="Change Location" />
+
+                    </Grid>
+                </TabItem>
+
+            </TabControl>
         </Grid>
-
-      </Border>
-
-      <TabControl Grid.Column="1" HorizontalAlignment="Center">
-
-        <TabItem Header="File Moving">
-
-          <Grid RowDefinitions="auto,auto,auto,auto,auto,auto"
-                HorizontalAlignment="Center"
-                Margin="0 20 0 0">
-
-
-            <Button Grid.Row="0"
-                    Content="Batch Split"
-                    VerticalAlignment="Center"
-                    HorizontalAlignment="Center"
-                    Command="{Binding BatchSplitCommand}"/>
-
-            <TextBlock Grid.Row="1"
-                       Text="Scan Date"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center"
-                       IsVisible="{Binding DocumentHasDate}"/>
-
-            <CalendarDatePicker Grid.Row="2"
-                                HorizontalAlignment="Center"
-                                SelectedDate="{Binding SpecifiedDate}"
-                                IsVisible="{Binding DocumentHasDate}"/>
-
-            <Button Grid.Row="5"
-                    Margin="0 5 0 0"
-                    Content="Move Files"
-                    HorizontalAlignment="Center"
-                    Command="{Binding MoveDeliveriesCommand}"/>
-
-          </Grid>
-        </TabItem>
-
-        <TabItem Header="Details">
-          <Grid RowDefinitions="auto,auto,auto,auto,auto"
-                ColumnDefinitions="auto,auto,auto,auto,auto"
-                HorizontalAlignment="Center"
-                Margin="0 5 0 0">
-
-            <TextBlock Grid.Row="0" Grid.Column="0"
-                       Text="Prefix:"
-                       VerticalAlignment="Center"/>
-
-            <TextBox Grid.Row="0" Grid.Column="1"
-                     Grid.ColumnSpan="3"
-                     Text="{Binding Prefix}"
-                     MinWidth="200"
-                     VerticalAlignment="Center"/>
-
-            <TextBlock Grid.Row="1" Grid.Column="0"
-                       Text="Example:"
-                       FontStyle="Italic"
-                       VerticalAlignment="Center"/>
-
-            <TextBlock Grid.Row="1" Grid.Column="1"
-                       Grid.ColumnSpan="3"
-                       Margin="0 5 0 0"
-                       Text="{Binding PrefixExample}"
-                       VerticalAlignment="Center"/>
-
-            <TextBlock Grid.Row="2" Grid.Column="0"
-                         Text="Pages Per:"
-                         VerticalAlignment="Center"/>
-
-            <NumericUpDown Grid.Row="2" Grid.Column="1"
-                           Margin="0 5 0 0"
-                           Minimum="1"
-                           Value="{Binding PagesPerDocument}"/>
-
-            <TextBlock Grid.Row="3" Grid.Column="0"
-                       Text="Minimum:"
-                       VerticalAlignment="Center"
-                       IsVisible="{Binding DocumentHasMinimum}"/>
-
-            <NumericUpDown Grid.Row="3" Grid.Column="1"
-                           Margin="0 5 0 0"
-                           Value="{Binding DocumentMinimum}"
-                           IsVisible="{Binding DocumentHasMinimum}"/>
-
-            <TextBlock Grid.Row="4" Grid.Column="0"
-                       Text="Tolerance:"
-                       VerticalAlignment="Center"
-                       IsVisible="{Binding DocumentHasMinimum}"/>
-
-            <NumericUpDown Grid.Row="4" Grid.Column="1"
-                           Margin="0 5 0 0"
-                           Value="{Binding Tolerance}"
-                           IsVisible="{Binding DocumentHasMinimum}"/>
-
-          </Grid>
-        </TabItem>
-
-        <TabItem Header="Locations">
-          <Grid RowDefinitions="auto,auto,auto,auto,auto,auto"
-                ColumnDefinitions="auto,*"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center">
-
-            <RadioButton Grid.Row="0" Grid.Column="0"
-                         Content="Scans:"
-                         Command="{Binding LocationCheckedCommand}"
-                         CommandParameter="Scans"
-                         IsChecked="True"
-                         GroupName="LocationsGroup"/>
-
-            <TextBox Grid.Row="0" Grid.Column="1"
-                     Text="{Binding MainFolder}"
-                     IsReadOnly="True"/>
-
-            <RadioButton Grid.Row="1" Grid.Column="0"
-                         VerticalAlignment="Center"
-                         Content="Deliveries:"
-                         Command="{Binding LocationCheckedCommand}"
-                         CommandParameter="Deliveries"
-                         GroupName="LocationsGroup"/>
-
-            <TextBox Grid.Row="1" Grid.Column="1"
-                     Margin="0 5 0 0"
-                     Text="{Binding DeliveriesFolder}"
-                     IsReadOnly="True"/>
-
-            <RadioButton Grid.Row="2" Grid.Column="0"
-                         VerticalAlignment="Center"
-                         GroupName="LocationsGroup"
-                         Command="{Binding LocationCheckedCommand}"
-                         CommandParameter="Shipping"
-                         Content="Shipping:"/>
-
-            <TextBox Grid.Row="2" Grid.Column="1"
-                     Margin="0 5 0 0"
-                     Text="{Binding ShippingLogsFolder}"
-                     IsReadOnly="True"/>
-
-            <RadioButton Grid.Row="3" Grid.Column="0"
-                         VerticalAlignment="Center"
-                         Content="RMAs:"
-                         Command="{Binding LocationCheckedCommand}"
-                         CommandParameter="RMAs"
-                         GroupName="LocationsGroup"/>
-
-            <TextBox Grid.Row="3" Grid.Column="1"
-                     Margin="0 5 0 0"
-                     Text="{Binding RMAsFolder}"
-                     IsReadOnly="True"/>
-
-            <RadioButton Grid.Row="4" Grid.Column="0"
-                         VerticalAlignment="Center"
-                         Content="Service:"
-                         Command="{Binding LocationCheckedCommand}"
-                         CommandParameter="Service"
-                         GroupName="LocationsGroup"/>
-
-            <TextBox Grid.Row="4" Grid.Column="1"
-                     Margin="0 5 0 0"
-                     Text="{Binding ServiceFolder}"
-                     IsReadOnly="True"
-                     MinWidth="200"/>
-
-            <Button Grid.Row="5" Grid.Column="0"
-                    Grid.ColumnSpan="2"
-                    HorizontalAlignment="Center"
-                    Content="Change Location"
-                    Command="{Binding ChangeLocationCommand}"
-                    Margin="0 5 0 0"/>
-
-          </Grid>
-        </TabItem>
-
-      </TabControl>
     </Grid>
-  </Grid>
 </Window>

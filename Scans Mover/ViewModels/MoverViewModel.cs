@@ -70,6 +70,8 @@ namespace Scans_Mover.ViewModels
         private DateTime _specifiedDate = DateTime.Now.AddDays(-1);
         public bool HasSkippedFiles { get; set; } = false;
         public bool FilesMoved { get; set; } = false;
+        [ObservableProperty]
+        private string _processingText = "Processing. Please wait.";
         #endregion
 
         public MoverViewModel(Window parentWindow, IMessenger theMessenger, string settingsFile)
