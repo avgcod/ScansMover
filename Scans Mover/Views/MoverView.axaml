@@ -11,8 +11,6 @@
     Height="305"
     MinWidth="550"
     MinHeight="305"
-    d:DesignHeight="305"
-    d:DesignWidth="550"
     x:DataType="vm:MoverViewModel"
     Icon="/Assets/Gas-trolley-5.ico"
     WindowStartupLocation="CenterScreen"

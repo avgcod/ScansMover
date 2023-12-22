@@ -6,19 +6,17 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:vm="using:Scans_Mover.ViewModels"
     Title="Notice"
-    Width="180"
+    Width="200"
     Height="100"
-    MinWidth="180"
+    MinWidth="200"
     MinHeight="100"
-    d:DesignHeight="100"
-    d:DesignWidth="180"
     x:DataType="vm:MessageBoxViewModel"
     SystemDecorations="BorderOnly"
     WindowStartupLocation="CenterOwner"
     mc:Ignorable="d">
 
     <StackPanel
-        Margin="0,5,0,0"
+        Margin="5"
         Orientation="Vertical"
         Spacing="10">
 
@@ -28,7 +26,6 @@
             Text="{Binding MessageText}" />
 
         <Button
-            Width="50"
             Margin="0,0,5,0"
             HorizontalAlignment="Center"
             HorizontalContentAlignment="Center"

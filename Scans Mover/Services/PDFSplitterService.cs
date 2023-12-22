@@ -26,7 +26,7 @@ namespace Scans_Mover.Services
             viewModel.ProcessingText = "Reading Batch File(s). Please Wait.";
             foreach (FileInfo theInfo in theFiles)
             {
-                viewModel.ProcessingText = $"Splitting {theInfo.Name}. Please Wait.";
+                viewModel.ProcessingText = $"Splitting {theInfo.Name}." + Environment.NewLine + "Please Wait.";
                 pdfsToRename.AddRange(await SplitPDFAsync(theInfo.FullName, viewModel, theMessenger));
             }
             viewModel.ProcessingText = "Finishing Up. Please Wait.";
