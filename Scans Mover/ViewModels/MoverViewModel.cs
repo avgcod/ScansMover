@@ -14,12 +14,11 @@ using System.Linq;
 
 namespace Scans_Mover.ViewModels
 {
-    public partial class MoverViewModel : ObservableObject, IRecipient<RenameMessage>, IRecipient<MoveLogMessage>, IRecipient<PagesPerDocumentErrorMessage>, IRecipient<OperationErrorMessage>
+    public partial class MoverViewModel : ObservableRecipient, IRecipient<RenameMessage>, IRecipient<MoveLogMessage>, IRecipient<PagesPerDocumentErrorMessage>, IRecipient<OperationErrorMessage>
     {
         #region Variables
         private readonly string _settingsFile;
         private readonly Window _parentWindow;
-        private readonly IMessenger _theMessenger;
         #endregion
 
         #region Properties
@@ -74,17 +73,13 @@ namespace Scans_Mover.ViewModels
         private string _processingText = "Processing. Please wait.";
         #endregion
 
-        public MoverViewModel(Window parentWindow, IMessenger theMessenger, string settingsFile)
+        public MoverViewModel(Window parentWindow, IMessenger theMessenger, string settingsFile) : base(theMessenger)
         {
             _parentWindow = parentWindow;
-            _theMessenger = theMessenger;
             _settingsFile = settingsFile;
 
 
-            _theMessenger.Register<RenameMessage>(this);
-            _theMessenger.Register<MoveLogMessage>(this);
-            _theMessenger.Register<PagesPerDocumentErrorMessage>(this);
-            _theMessenger.Register<OperationErrorMessage>(this);
+            Messenger.RegisterAll(this);
             _parentWindow.Loaded += OnWindowLoaded;
             _parentWindow.Closing += OnWindowClosing;
         }
@@ -98,7 +93,7 @@ namespace Scans_Mover.ViewModels
         [RelayCommand]
         public async Task ChangeLocation()
         {
-            IStorageFolder? selectedFolder = await FileAccessService.ChooseLocationAsync(_parentWindow, _theMessenger);
+            IStorageFolder? selectedFolder = await FileAccessService.ChooseLocationAsync(_parentWindow, Messenger);
 
             if (selectedFolder != null)
             {
@@ -163,8 +158,8 @@ namespace Scans_Mover.ViewModels
             Busy = true;
             HasSkippedFiles = false;
 
-            IEnumerable<string> pdfFileNames = await PDFSplitterService.SplitBatchPDFsAsync(this, _theMessenger);
-            await FileRenameService.RenamePDFsAsync(pdfFileNames, this, _theMessenger, _parentWindow);
+            IEnumerable<string> pdfFileNames = await PDFSplitterService.SplitBatchPDFsAsync(this, Messenger);
+            await FileRenameService.RenamePDFsAsync(pdfFileNames, this, Messenger, _parentWindow);
 
             if (HasSkippedFiles)
             {
@@ -184,7 +179,7 @@ namespace Scans_Mover.ViewModels
 
             FilesMoved = false;
 
-            IEnumerable<string> filesNeedingFolders = await DocumentMoverService.MoveToFolderAsync(this, _theMessenger);
+            IEnumerable<string> filesNeedingFolders = await DocumentMoverService.MoveToFolderAsync(this, Messenger);
 
             if (FilesMoved)
             {
@@ -223,7 +218,7 @@ namespace Scans_Mover.ViewModels
         /// <param name="e">Cancel event arguments.</param>
         public async void OnWindowClosing(object? sender, CancelEventArgs e)
         {
-            _theMessenger.UnregisterAll(this);
+            Messenger.UnregisterAll(this);
             UpdateSettings();
             await SaveSettingsAsync();
         }
@@ -235,7 +230,7 @@ namespace Scans_Mover.ViewModels
         {
             Busy = true;
 
-            Settings = await FileAccessService.LoadSettingsAsync(_settingsFile, _theMessenger);
+            Settings = await FileAccessService.LoadSettingsAsync(_settingsFile, Messenger);
 
             Busy = false;
 
@@ -316,7 +311,7 @@ namespace Scans_Mover.ViewModels
         /// <returns>If the operation succeeded.</returns>
         public async Task SaveSettingsAsync()
         {
-            await FileAccessService.SaveSettingsAsync(Settings, _settingsFile, _theMessenger);
+            await FileAccessService.SaveSettingsAsync(Settings, _settingsFile, Messenger);
         }
         #endregion
 
@@ -501,8 +496,8 @@ namespace Scans_Mover.ViewModels
         private async Task HandleMoveLogMessage(MoveLogMessage theMessage)
         {
             FilesMoved = true;
-            await FileAccessService.SaveLogAsync(theMessage.LogInfo, theMessage.LogFile, _theMessenger);
-            await FileAccessService.LoadDefaultApplicationAsync(theMessage.LogFile, _theMessenger);
+            await FileAccessService.SaveLogAsync(theMessage.LogInfo, theMessage.LogFile, Messenger);
+            await FileAccessService.LoadDefaultApplicationAsync(theMessage.LogFile, Messenger);
         }
         /// <summary>
         /// Processes PagesPerDocumentErrorMessage messages.
