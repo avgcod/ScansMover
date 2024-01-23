@@ -11,7 +11,7 @@ namespace Scans_Mover.Commands
     {
         private readonly FileRenameViewModel _frViewModel;
         private readonly Window _currentWindow;
-        private IMessenger _theMessenger;
+        private readonly IMessenger _theMessenger;
         public RenameCommand(Window currentWindow, FileRenameViewModel frViewModel, IMessenger theMessenger)
         {
             _currentWindow = currentWindow;
@@ -43,7 +43,6 @@ namespace Scans_Mover.Commands
                     && _frViewModel.NewFileName.Length >= _frViewModel.NameLength
                     && base.CanExecute(parameter);
             }
-
         }
         public override void Execute(object? parameter)
         {

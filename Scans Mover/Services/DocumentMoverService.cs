@@ -18,10 +18,10 @@ namespace Scans_Mover.Services
         /// <returns>IEnumerable of files that appear to be duplcates or do not have a folder to be put in.</returns>
         public static async Task<IEnumerable<string>> MoveToFolderAsync(MoverViewModel theModel, IMessenger theMessenger)
         {
-            List<string> noFoldersFound = new List<string>();
+            List<string> noFoldersFound = [];
             IEnumerable<FileInfo> theFiles = await FileAccessService.GetFilesAsync(theModel.MainFolder, theMessenger);
-            List<string> moveLog = new List<string>();
-            theFiles = await Task.Run(() => theFiles.Where(x => x.Name.StartsWith(theModel.Prefix) && !x.Name.ToLower().Contains("batch")));
+            List<string> moveLog = [];
+            theFiles = await Task.Run(() => theFiles.Where(x => x.Name.StartsWith(theModel.Prefix) && !x.Name.Contains("batch",StringComparison.OrdinalIgnoreCase)));
             string rootDestination = GetRootDestination(theModel);
             string finalDestination = string.Empty;
             string newFileName = string.Empty;
@@ -45,7 +45,6 @@ namespace Scans_Mover.Services
                         {
                             noFoldersFound.Add("File " + theInfo.Name + " Already Exists In Folder " + finalDestination);
                         }
-
                     }
                     else
                     {
@@ -58,14 +57,13 @@ namespace Scans_Mover.Services
                 noFoldersFound.Add("Folder does not exist for " + theModel.SelectedScanType.ToString() + "s");
             }
 
-            if (moveLog.Any())
+            if (moveLog.Count > 0)
             {
                 string logFile = theModel.SelectedScanType.ToString() + " Move Log - " + GetTimeStamp(DateTime.Now) + ".txt";
                 theMessenger.Send<MoveLogMessage>(new MoveLogMessage(moveLog, logFile));
             }
 
             return noFoldersFound;
-
         }
 
         #region GetMethods
@@ -95,7 +93,7 @@ namespace Scans_Mover.Services
         /// <returns>The root destination folder.</returns>
         private static string GetRootDestination(MoverViewModel theModel)
         {
-            if (theModel.SelectedScanType == ScanType.Delivery | theModel.SelectedScanType == ScanType.PO)
+            if (theModel.SelectedScanType == ScanType.Delivery || theModel.SelectedScanType == ScanType.PO)
             {
                 return theModel.Settings.DeliveriesFolder;
             }
@@ -153,7 +151,6 @@ namespace Scans_Mover.Services
                 GetFormattedMonthNumber(specifiedDate.Month) + " " +
                 GetMonthName(specifiedDate.Month), GetMonthName(specifiedDate.Month) + " " + GetFormattedDay(specifiedDate.Day),
                 fileName.Replace(theModel.Prefix, "").Replace(".pdf", ""));
-
         }
 
         /// <summary>
@@ -166,11 +163,11 @@ namespace Scans_Mover.Services
             string deliveryNum = fileName.Replace(theModel.Prefix, "").Replace(".pdf", "");
             string poDestination = await CheckDeliveryDestinationsAsync(theModel, deliveryNum, DateTime.Now, theMessenger);
 
-            if (poDestination == string.Empty)
+            if (string.IsNullOrEmpty(poDestination))
             {
                 poDestination = await CheckDeliveryDestinationsAsync(theModel, deliveryNum, DateTime.Now.AddMonths(-1), theMessenger);
 
-                if (poDestination == string.Empty)
+                if (string.IsNullOrEmpty(poDestination))
                 {
                     poDestination = await CheckDeliveryDestinationsAsync(theModel, deliveryNum, DateTime.Now.AddMonths(-2), theMessenger);
                 }
@@ -190,12 +187,12 @@ namespace Scans_Mover.Services
             DateTime theDT = DateTime.Now;
             string serviceDestination = await CheckDeliveryDestinationsAsync(theModel, deliveryNum, theDT, theMessenger);
 
-            if (serviceDestination == string.Empty)
+            if (string.IsNullOrEmpty(serviceDestination))
             {
                 theDT = theDT.AddMonths(-1);
                 serviceDestination = await CheckDeliveryDestinationsAsync(theModel, deliveryNum, theDT, theMessenger);
 
-                if (serviceDestination == string.Empty)
+                if (string.IsNullOrEmpty(serviceDestination))
                 {
                     theDT = theDT.AddMonths(-1);
                     serviceDestination = await CheckDeliveryDestinationsAsync(theModel, deliveryNum, theDT, theMessenger);
@@ -231,7 +228,6 @@ namespace Scans_Mover.Services
                         }
                     }
                 });
-
             }
             return rmaDestination;
         }
@@ -307,7 +303,7 @@ namespace Scans_Mover.Services
         {
             int days = DateTime.DaysInMonth(month.Year, month.Month) + 1;
             string deliveryDestination = string.Empty;
-            DateTime currentDate = new DateTime();
+            DateTime currentDate = new();
 
             for (int i = 1; i < days; i++)
             {

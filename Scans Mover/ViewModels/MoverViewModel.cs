@@ -11,14 +11,15 @@ using CommunityToolkit.Mvvm.Messaging;
 using System.Collections.Generic;
 using Scans_Mover.Views;
 using System.Linq;
+using UglyToad.PdfPig.Fonts.TrueType.Names;
 
 namespace Scans_Mover.ViewModels
 {
-    public partial class MoverViewModel : ObservableRecipient, IRecipient<RenameMessage>, IRecipient<MoveLogMessage>, IRecipient<PagesPerDocumentErrorMessage>, IRecipient<OperationErrorMessage>
+    public partial class MoverViewModel(Window parentWindow, IMessenger theMessenger, string settingsFile) : ObservableRecipient(theMessenger), IRecipient<RenameMessage>, IRecipient<MoveLogMessage>, IRecipient<PagesPerDocumentErrorMessage>, IRecipient<OperationErrorMessage>
     {
         #region Variables
-        private readonly string _settingsFile;
-        private readonly Window _parentWindow;
+        private readonly string _settingsFile = settingsFile;
+        private readonly Window _parentWindow = parentWindow;
         #endregion
 
         #region Properties
@@ -71,18 +72,8 @@ namespace Scans_Mover.ViewModels
         public bool FilesMoved { get; set; } = false;
         [ObservableProperty]
         private string _processingText = "Processing. Please wait.";
+
         #endregion
-
-        public MoverViewModel(Window parentWindow, IMessenger theMessenger, string settingsFile) : base(theMessenger)
-        {
-            _parentWindow = parentWindow;
-            _settingsFile = settingsFile;
-
-
-            Messenger.RegisterAll(this);
-            _parentWindow.Loaded += OnWindowLoaded;
-            _parentWindow.Closing += OnWindowClosing;
-        }
 
         #region Commands
         public bool CanSplit => !Busy && !string.IsNullOrEmpty(MainFolder) && !string.IsNullOrEmpty(Prefix);
@@ -131,7 +122,6 @@ namespace Scans_Mover.ViewModels
                 SavePrefix();
                 SaveDocumentMinimum();
                 SavePagesPerDocument();
-
 
                 SelectedScanType = (ScanType)Enum.Parse(typeof(ScanType), typeText);
 
@@ -201,26 +191,18 @@ namespace Scans_Mover.ViewModels
         }
         #endregion
 
-        /// <summary>
-        /// Loads all information when the window is opened.
-        /// </summary>
-        /// <param name="sender">Window sender.</param>
-        /// <param name="e">Event arguments.</param>
-        public async void OnWindowLoaded(object? sender, EventArgs e)
+        protected override async void OnActivated()
         {
+            Messenger.RegisterAll(this);
             await LoadSettingsAsync();
+            base.OnActivated();
         }
 
-        /// <summary>
-        /// Saves all information when the window is closed.
-        /// </summary>
-        /// <param name="sender">Window sender.</param>
-        /// <param name="e">Cancel event arguments.</param>
-        public async void OnWindowClosing(object? sender, CancelEventArgs e)
+        protected override async void OnDeactivated()
         {
             Messenger.UnregisterAll(this);
-            UpdateSettings();
             await SaveSettingsAsync();
+            base.OnDeactivated();
         }
 
         /// <summary>
@@ -235,7 +217,6 @@ namespace Scans_Mover.ViewModels
             Busy = false;
 
             UpdateProperties();
-
         }
 
         #region Save Methods
@@ -265,6 +246,7 @@ namespace Scans_Mover.ViewModels
                 Settings.ServicePagesPerDocument = PagesPerDocument;
             }
         }
+
         /// <summary>
         /// Sets the appropriate Settings object Prefix property based on the SelectedScanType property.
         /// </summary>
@@ -291,6 +273,7 @@ namespace Scans_Mover.ViewModels
                 Settings.ServicePrefix = Prefix;
             }
         }
+
         /// <summary>
         /// Sets the appropriate Settings object DeliveriesMinimum property based on the SelectedScanType property.
         /// </summary>
@@ -305,6 +288,7 @@ namespace Scans_Mover.ViewModels
                 Settings.RMAsMinimum = DocumentMinimum;
             }
         }
+
         /// <summary>
         /// Saves the Settings property to a file.
         /// </summary>
@@ -321,15 +305,9 @@ namespace Scans_Mover.ViewModels
         /// </summary>
         private void ChangeHasMinimum()
         {
-            if (SelectedScanType == ScanType.Delivery || SelectedScanType == ScanType.RMA)
-            {
-                DocumentHasMinimum = true;
-            }
-            else
-            {
-                DocumentHasMinimum = false;
-            }
+            DocumentHasMinimum = SelectedScanType == ScanType.Delivery || SelectedScanType == ScanType.RMA;
         }
+
         /// <summary>
         /// Changes the PagesPerDocument property based on the SelectedScanType property.
         /// </summary>
@@ -356,20 +334,15 @@ namespace Scans_Mover.ViewModels
                 PagesPerDocument = Settings.ServicePagesPerDocument;
             }
         }
+
         /// <summary>
         /// Changed the DocumentHasDate property based on the SelectedScanType property.
         /// </summary>
         private void ChangeHasDate()
         {
-            if (SelectedScanType == ScanType.Delivery)
-            {
-                DocumentHasDate = true;
-            }
-            else
-            {
-                DocumentHasDate = false;
-            }
+            DocumentHasDate = SelectedScanType == ScanType.Delivery;
         }
+
         /// <summary>
         /// Changes the Prefix property based on the SelectedScanType property.
         /// </summary>
@@ -396,8 +369,9 @@ namespace Scans_Mover.ViewModels
                 Prefix = Settings.ServicePrefix;
             }
         }
+
         /// <summary>
-        /// Changes the DocumentMinimum property based on the SelectedScanType property. 
+        /// Changes the DocumentMinimum property based on the SelectedScanType property.
         /// </summary>
         private void ChangeDocumentMinimum()
         {
@@ -412,22 +386,6 @@ namespace Scans_Mover.ViewModels
         }
         #endregion
 
-        #region Update Methods
-        /// <summary>
-        /// Updates the folders on the Settings object to be what is current on the folder properties on the view model.
-        /// </summary>
-        private void UpdateSettings()
-        {
-            Settings.MainFolder = MainFolder;
-            Settings.DeliveriesFolder = DeliveriesFolder;
-            Settings.RMAsFolder = RMAsFolder;
-            Settings.ShippingLogsFolder = ShippingLogsFolder;
-            Settings.ServiceFolder = ServiceFolder;
-            Settings.Tolerance = Tolerance;
-            SavePrefix();
-            SaveDocumentMinimum();
-            SavePagesPerDocument();
-        }
         /// <summary>
         /// Updates all observable properties.
         /// </summary>
@@ -453,113 +411,113 @@ namespace Scans_Mover.ViewModels
             ChangePagesPerDocument();
             ChangeHasMinimum();
             ChangeDocumentMinimum();
-
         }
-        #endregion
 
         #region Message Handling
         /// <summary>
         /// Displays a message box with message information.
         /// </summary>
-        /// <param name="theMessage">The message to show</param>
+        /// <param name="message">The message to show</param>
         /// <returns>Task</returns>
-        private async Task HandleOperationErrorMessage(OperationErrorMessage theMessage)
+        private async Task HandleOperationErrorMessage(OperationErrorMessage message)
         {
-            ErrorMessageBoxView emboxView = new ErrorMessageBoxView();
-
-            emboxView.DataContext = new ErrorMessageBoxViewModel(emboxView, theMessage);
-
+            ErrorMessageBoxView emboxView = new();
+            ErrorMessageBoxViewModel embvModel = new (emboxView, Messenger);
+            emboxView.DataContext = embvModel;
+            embvModel.IsActive = true;
+            Messenger.Send(new OperationErrorInfoMessage(message.ErrorType, message.ErrorMessage));
             await emboxView.ShowDialog(_parentWindow);
+            embvModel.IsActive = false;
         }
+
         /// <summary>
         /// Processes RenameMessage messages.
         /// </summary>
-        /// <param name="theMessage">The RenameMessage to process.</param>
-        private void HandleRenameMessage(RenameMessage theMessage)
+        /// <param name="message">The RenameMessage to process.</param>
+        private void HandleRenameMessage(RenameMessage message)
         {
-            CurrentScanStatus = theMessage.ScanStatus;
-            if (theMessage.ScanStatus == ScanStatus.OK)
+            CurrentScanStatus = message.ScanStatus;
+            if (CurrentScanStatus == ScanStatus.OK)
             {
-
-                CurrentScanNewFileName = theMessage.NewFileName;
-
+                CurrentScanNewFileName = message.NewFileName;
             }
-            else if (theMessage.ScanStatus == ScanStatus.Skip)
+            else if (CurrentScanStatus == ScanStatus.Skip)
             {
                 HasSkippedFiles = true;
             }
         }
+
         /// <summary>
         /// Processes LogMessage messages.
         /// </summary>
-        /// <param name="theMessage">The LogMessage to process.</param>
-        private async Task HandleMoveLogMessage(MoveLogMessage theMessage)
+        /// <param name="message">The LogMessage to process.</param>
+        private async Task HandleMoveLogMessage(MoveLogMessage message)
         {
             FilesMoved = true;
-            await FileAccessService.SaveLogAsync(theMessage.LogInfo, theMessage.LogFile, Messenger);
-            await FileAccessService.LoadDefaultApplicationAsync(theMessage.LogFile, Messenger);
+            await FileAccessService.SaveLogAsync(message.LogInfo, message.LogFile, Messenger);
+            await FileAccessService.LoadDefaultApplicationAsync(message.LogFile, Messenger);
         }
+
         /// <summary>
         /// Processes PagesPerDocumentErrorMessage messages.
         /// </summary>
-        /// <param name="theMessage">The PagesPerDocumentErrorMessage to process.</param>
-        private async Task HandlePagesPerDocumentErrorMessage(PagesPerDocumentErrorMessage theMessage)
+        /// <param name="message">The PagesPerDocumentErrorMessage to process.</param>
+        private async Task HandlePagesPerDocumentErrorMessage(PagesPerDocumentErrorMessage message)
         {
-            await DisplayMessageBoxAsync(theMessage.Info);
+            await DisplayMessageBoxAsync(message.Info);
         }
 
         /// <summary>
         /// Handles RenameMessages that are sent.
         /// </summary>
-        /// <param name="theMessage">The RenameMessage that was sent.</param>        
-        public void Receive(RenameMessage theMessage)
+        /// <param name="message">The RenameMessage that was sent.</param>
+        public void Receive(RenameMessage message)
         {
-            HandleRenameMessage(theMessage);
+            HandleRenameMessage(message);
         }
 
         /// <summary>
         /// Handles LogMessages that are sent.
         /// </summary>
-        /// <param name="theMessage">The LogMessage that was sent.</param>
-        public async void Receive(MoveLogMessage theMessage)
+        /// <param name="message">The LogMessage that was sent.</param>
+        public async void Receive(MoveLogMessage message)
         {
-            await HandleMoveLogMessage(theMessage);
+            await HandleMoveLogMessage(message);
         }
 
         /// <summary>
         /// Handles PagesPerDocumentErrorMessage that are sent.
         /// </summary>
-        /// <param name="theMessage">The PagesPerDocumentErrorMessage that was sent.</param>
-        public async void Receive(PagesPerDocumentErrorMessage theMessage)
+        /// <param name="message">The PagesPerDocumentErrorMessage that was sent.</param>
+        public async void Receive(PagesPerDocumentErrorMessage message)
         {
-            await HandlePagesPerDocumentErrorMessage(theMessage);
+            await HandlePagesPerDocumentErrorMessage(message);
         }
 
         /// <summary>
         /// Handles OperationErrorMessage that are sent.
         /// </summary>
-        /// <param name="theMessage">The OperationErrorMessage that was sent.</param>
-        public async void Receive(OperationErrorMessage theMessage)
+        /// <param name="message">The OperationErrorMessage that was sent.</param>
+        public async void Receive(OperationErrorMessage message)
         {
-            await HandleOperationErrorMessage(theMessage);
+            await HandleOperationErrorMessage(message);
         }
         #endregion
 
         /// <summary>
         /// Displays a simple message box with a specified message.
         /// </summary>
-        /// <param name="theMessage">The message to show</param>
+        /// <param name="message">The message to show</param>
         /// <returns>Task</returns>
-        private async Task DisplayMessageBoxAsync(string theMessage)
+        private async Task DisplayMessageBoxAsync(string message)
         {
-            MessageBoxView mboxView = new MessageBoxView();
-
-            mboxView.DataContext = new MessageBoxViewModel(mboxView, theMessage);
-
+            MessageBoxView mboxView = new();
+            MessageBoxViewModel mbvModel = new (mboxView, Messenger);
+            mboxView.DataContext = mbvModel;
+            mbvModel.IsActive = true;
+            Messenger.Send(new NotificationMessage(message));
             await mboxView.ShowDialog(_parentWindow);
+            mbvModel.IsActive = false;
         }
-
-
-
     }
 }

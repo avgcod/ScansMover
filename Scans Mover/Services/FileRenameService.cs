@@ -23,7 +23,6 @@ namespace Scans_Mover.Services
             {
                 return false;
             }
-
         }
 
         public static async Task RenamePDFsAsync(IEnumerable<string> pdfsToRename, MoverViewModel viewModel, IMessenger theMessenger, Window currentWindow)
@@ -31,12 +30,16 @@ namespace Scans_Mover.Services
             if (pdfsToRename.Any())
             {
                 FileRenameView renameView;
+                FileRenameViewModel frvModel;
                 foreach (string fileName in pdfsToRename)
                 {
                     renameView = new FileRenameView();
-                    renameView.DataContext = new FileRenameViewModel(renameView, fileName, viewModel.SelectedScanType,
+                    frvModel =new FileRenameViewModel(renameView, fileName, viewModel.SelectedScanType,
                         viewModel.DocumentMinimum, viewModel.Prefix, theMessenger);
+                    renameView.DataContext = frvModel;
+                    frvModel.IsActive = true;
                     await renameView.ShowDialog(currentWindow);
+                    frvModel.IsActive = false;
                     if (viewModel.CurrentScanStatus == ScanStatus.OK)
                     {
                         await RenamePDFAsync(fileName, viewModel.CurrentScanNewFileName, viewModel.Prefix, theMessenger);

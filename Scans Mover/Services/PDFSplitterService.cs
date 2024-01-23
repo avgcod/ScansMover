@@ -20,9 +20,9 @@ namespace Scans_Mover.Services
         /// <returns>List of PDFs in byte array form a proper title could not be read from.</returns>
         public static async Task<IEnumerable<string>> SplitBatchPDFsAsync(MoverViewModel viewModel, IMessenger theMessenger)
         {
-            List<string> pdfsToRename = new List<string>();
+            List<string> pdfsToRename = [];
             IEnumerable<FileInfo> theFiles = await FileAccessService.GetFilesAsync(viewModel.MainFolder, theMessenger);
-            theFiles = theFiles.Where(x => x.Name.ToLower().Contains(viewModel.Prefix.ToLower() + " batch"));
+            theFiles = theFiles.Where(x => x.Name.Contains(viewModel.Prefix.ToLower() + " batch", StringComparison.CurrentCultureIgnoreCase));
             viewModel.ProcessingText = "Reading Batch File(s). Please Wait.";
             foreach (FileInfo theInfo in theFiles)
             {
@@ -40,13 +40,9 @@ namespace Scans_Mover.Services
         private static async Task<IEnumerable<string>> SplitPDFAsync(string fileName, MoverViewModel viewModel, IMessenger theMessenger)
         {
             string path = Path.GetDirectoryName(fileName) ?? string.Empty;
-            string ticks = string.Empty;
             string title = string.Empty;
-            string newFileName = string.Empty;
-            string pageText = string.Empty;
-            byte[] outputDocument = new byte[1];
-            List<string> pdfsToRename = new List<string>();
-            List<Task> pdfsToSave = new List<Task>();
+            List<string> pdfsToRename = [];
+            List<Task> pdfsToSave = [];
 
             using (PdfDocument? theDocument = await FileAccessService.LoadPDFDocumentAsync(fileName, theMessenger))
             {
@@ -56,23 +52,19 @@ namespace Scans_Mover.Services
                     {
                         if (viewModel.DocumentHasMinimum)
                         {
-                            pageText = await ExtractTextAsync(theDocument.GetPage(i + 1), viewModel.SelectedScanType);
+                            string pageText = await ExtractTextAsync(theDocument.GetPage(i + 1), viewModel.SelectedScanType);
                             title = await GetPageTitleAsync(pageText, viewModel.DocumentMinimum, viewModel.SelectedScanType, viewModel.Tolerance);
                         }
-                        else
-                        {
-                            title = string.Empty;
-                        }
 
-                        outputDocument = await BuildDocumentAsync(theDocument, i, viewModel.PagesPerDocument);
+                        byte[] outputDocument = await BuildDocumentAsync(theDocument, i, viewModel.PagesPerDocument);
 
                         i += viewModel.PagesPerDocument - 1;
 
-                        newFileName = Path.Combine(path, viewModel.Prefix + title + ".pdf");
+                        string newFileName = Path.Combine(path, viewModel.Prefix + title + ".pdf");
 
                         if (title.Length < 2 || await FileAccessService.FileExistsAsync(newFileName, theMessenger))
                         {
-                            ticks = DateTime.Now.Ticks.ToString();
+                            string ticks = DateTime.Now.Ticks.ToString();
                             newFileName = newFileName + ticks + ".pdf";
                             pdfsToSave.Add(FileAccessService.SavePDFDocumentAsync(newFileName, outputDocument, theMessenger));
                             pdfsToRename.Add(newFileName);
@@ -81,7 +73,6 @@ namespace Scans_Mover.Services
                         {
                             pdfsToSave.Add(FileAccessService.SavePDFDocumentAsync(newFileName, outputDocument, theMessenger));
                         }
-
                     }
                     await Task.WhenAll(pdfsToSave);
                 }
@@ -89,7 +80,6 @@ namespace Scans_Mover.Services
                 {
                     theMessenger.Send<PagesPerDocumentErrorMessage>(new PagesPerDocumentErrorMessage($"File {fileName} is not divisible by the specified pages per document."));
                 }
-
             }
             return pdfsToRename;
         }
@@ -102,7 +92,7 @@ namespace Scans_Mover.Services
         /// <returns>The splitted document in byte array form.</returns>
         private static async Task<byte[]> BuildDocumentAsync(PdfDocument theDocument, int i, int pagesPerDoc)
         {
-            PdfDocumentBuilder docBuilder = new PdfDocumentBuilder();
+            PdfDocumentBuilder docBuilder = new();
 
             await Task.Run(() =>
             {
@@ -142,14 +132,13 @@ namespace Scans_Mover.Services
                         }
                     }
                 });
-
             }
 
             return title;
         }
 
         /// <summary>
-        /// Returns all the the text on a PDF page as a string seperated by a space asynchronously.
+        /// Returns all the text on a PDF page as a string seperated by a space asynchronously.
         /// </summary>
         /// <param name="thePage">The PDF page to extract text from.</param>
         /// <returns>The text of the page combined into one spring.</returns>
@@ -166,6 +155,5 @@ namespace Scans_Mover.Services
             }
             return text;
         }
-
     }
 }

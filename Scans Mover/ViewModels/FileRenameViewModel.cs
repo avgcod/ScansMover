@@ -6,6 +6,7 @@ using System.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
+using CommunityToolkit.Mvvm.Collections;
 
 namespace Scans_Mover.ViewModels
 {
@@ -14,7 +15,7 @@ namespace Scans_Mover.ViewModels
         #region Variables
         private readonly Window _currentWindow;
         private readonly string _fileName;
-        private readonly IMessenger _theMessenger;
+        private readonly double _numLength;
         #endregion
 
         #region Properties
@@ -53,28 +54,15 @@ namespace Scans_Mover.ViewModels
         private string _watermark = string.Empty;
         #endregion
 
-        public FileRenameViewModel(Window currentWindow, string fileName, ScanType tempType, double numLength, string prefixText, IMessenger theMessenger)
+        public FileRenameViewModel(Window currentWindow, string fileName, ScanType tempType, double numLength, string prefixText, IMessenger theMessenger) : base(theMessenger)
         {
             _fileName = fileName;
             _currentWindow = currentWindow;
-            _theMessenger = theMessenger;
+            _numLength = numLength;
 
-            PropertyChanged += OnPropertyChange;
-
-            _currentWindow.Opened += WindowOpened;
-            _currentWindow.Closing += OnWindowClosing;
-
-            TypeText = tempType.ToString();
             CurrentType = tempType;
+            TypeText = CurrentType.ToString();
             _prefixText = prefixText;
-
-            if (CurrentType == ScanType.Service)
-            {
-                IsService = true;
-                TypeText = "Delivery";
-            }
-
-            SetNameLength(numLength);
         }
 
         private void SetNameLength(double numLength)
@@ -95,7 +83,6 @@ namespace Scans_Mover.ViewModels
                 {
                     Watermark += "#";
                 }
-
             }
         }
 
@@ -120,7 +107,6 @@ namespace Scans_Mover.ViewModels
                 return DateTime.TryParse(NewFileName, out _)
                     && NewFileName.Length >= NameLength;
             }
-
         }
 
         [RelayCommand(CanExecute = nameof(CanRename))]
@@ -137,35 +123,39 @@ namespace Scans_Mover.ViewModels
             {
                 NewFileName = NewFileName + "_Call " + CallNum;
             }
-            _theMessenger.Send(new RenameMessage(ScanStatus.OK, NewFileName));
+            Messenger.Send(new RenameMessage(ScanStatus.OK, NewFileName));
             _currentWindow.Close();
         }
 
         [RelayCommand]
         public void Skip()
         {
-            _theMessenger.Send(new RenameMessage(ScanStatus.Skip, string.Empty));
+            Messenger.Send(new RenameMessage(ScanStatus.Skip, string.Empty));
             _currentWindow.Close();
         }
 
         [RelayCommand]
         public void Cancel()
         {
-            _theMessenger.Send(new RenameMessage(ScanStatus.Cancel, string.Empty));
+            Messenger.Send(new RenameMessage(ScanStatus.Cancel, string.Empty));
             _currentWindow.Close();
-        } 
+        }
         #endregion
 
-        public async void WindowOpened(object? sender, EventArgs e)
+        protected override async void OnActivated()
         {
-            await FileAccessService.LoadDefaultApplicationAsync(_fileName, _theMessenger);
+            await FileAccessService.LoadDefaultApplicationAsync(_fileName, Messenger);
             _currentWindow.FindControl<TextBox>("tbxFileName")?.Focus();
-        }
 
-        public void OnWindowClosing(object? sender, CancelEventArgs e)
-        {     
-            _currentWindow.Opened -= WindowOpened;
-            _currentWindow.Closing -= OnWindowClosing;
+            if (CurrentType == ScanType.Service)
+            {
+                IsService = true;
+                TypeText = "Delivery";
+            }
+
+            SetNameLength(_numLength);
+
+            base.OnActivated();
         }
 
         /// <summary>
@@ -183,7 +173,6 @@ namespace Scans_Mover.ViewModels
                 {
                     ExampleText = _prefixText + NewFileName;
                 }
-
             }
             else
             {
@@ -191,17 +180,14 @@ namespace Scans_Mover.ViewModels
             }
         }
 
-        /// <summary>
-        /// Watches for property changes on the MoverViewModel.
-        /// </summary>
-        /// <param name="sender">Sender of the change.</param>
-        /// <param name="e">Arguments of the change.</param>
-        private void OnPropertyChange(object? sender, PropertyChangedEventArgs e)
+        partial void OnNewFileNameChanged(string value)
         {
-            if (e.PropertyName == nameof(FileRenameViewModel.NewFileName) || e.PropertyName == nameof(FileRenameViewModel.CallNum))
-            {
-                UpdateExampleText();
-            }
+            UpdateExampleText();
+        }
+
+        partial void OnCallNumChanged(string value)
+        {
+            UpdateExampleText();
         }
     }
 }
