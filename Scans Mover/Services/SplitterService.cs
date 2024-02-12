@@ -12,24 +12,21 @@ using CommunityToolkit.Mvvm.Messaging;
 
 namespace Scans_Mover.Services
 {
-    public static class PDFSplitterService
+    public static class SplitterService
     {
         /// <summary>
         /// Splits multipage PDFs into single page PDFs based on the PDF file name asynchronously.
         /// </summary>
         /// <returns>List of PDFs in byte array form a proper title could not be read from.</returns>
-        public static async Task<IEnumerable<string>> SplitBatchPDFsAsync(MoverViewModel viewModel, IMessenger theMessenger)
+        public static async Task<IEnumerable<string>> SplitBatchDocumentsAsync(SplitSettings splitSettings, IMessenger theMessenger)
         {
             List<string> pdfsToRename = [];
-            IEnumerable<FileInfo> theFiles = await FileAccessService.GetFilesAsync(viewModel.MainFolder, theMessenger);
-            theFiles = theFiles.Where(x => x.Name.Contains(viewModel.Prefix.ToLower() + " batch", StringComparison.CurrentCultureIgnoreCase));
-            viewModel.ProcessingText = "Reading Batch File(s). Please Wait.";
+            IEnumerable<FileInfo> theFiles = await FileAccessService.GetFilesAsync(splitSettings.MainFolder, theMessenger);
+            theFiles = theFiles.Where(x => x.Name.Contains(splitSettings.Prefix.ToLower() + " batch", StringComparison.CurrentCultureIgnoreCase));
             foreach (FileInfo theInfo in theFiles)
             {
-                viewModel.ProcessingText = $"Splitting {theInfo.Name}." + Environment.NewLine + "Please Wait.";
-                pdfsToRename.AddRange(await SplitPDFAsync(theInfo.FullName, viewModel, theMessenger));
+                pdfsToRename.AddRange(await SplitBatchDocumentAsync(theInfo.FullName, splitSettings, theMessenger));
             }
-            viewModel.ProcessingText = "Finishing Up. Please Wait.";
             return pdfsToRename;
         }
 
@@ -37,7 +34,7 @@ namespace Scans_Mover.Services
         /// Splits a multipage PDF into singe page PDFs asynchronously.
         /// </summary>
         /// <returns>List of PDFs in byte array form a proper title could not be read from.</returns>
-        private static async Task<IEnumerable<string>> SplitPDFAsync(string fileName, MoverViewModel viewModel, IMessenger theMessenger)
+        private static async Task<IEnumerable<string>> SplitBatchDocumentAsync(string fileName, SplitSettings splitSettings, IMessenger theMessenger)
         {
             string path = Path.GetDirectoryName(fileName) ?? string.Empty;
             string title = string.Empty;
@@ -46,21 +43,21 @@ namespace Scans_Mover.Services
 
             using (PdfDocument? theDocument = await FileAccessService.LoadPDFDocumentAsync(fileName, theMessenger))
             {
-                if ((theDocument?.NumberOfPages % viewModel.PagesPerDocument) == 0)
+                if ((theDocument?.NumberOfPages % splitSettings.PagesPerDocument) == 0)
                 {
                     for (int i = 0; i < theDocument!.NumberOfPages; i++)
                     {
-                        if (viewModel.DocumentHasMinimum)
+                        if (splitSettings.DocumentHasMinimum)
                         {
-                            string pageText = await ExtractTextAsync(theDocument.GetPage(i + 1), viewModel.SelectedScanType);
-                            title = await GetPageTitleAsync(pageText, viewModel.DocumentMinimum, viewModel.SelectedScanType, viewModel.Tolerance);
+                            string pageText = await ExtractTextAsync(theDocument.GetPage(i + 1), splitSettings.SelectedScanType);
+                            title = await GetPageTitleAsync(pageText, splitSettings.DocumentMinimum, splitSettings.SelectedScanType, splitSettings.Tolerance);
                         }
 
-                        byte[] outputDocument = await BuildDocumentAsync(theDocument, i, viewModel.PagesPerDocument);
+                        byte[] outputDocument = await BuildDocumentAsync(theDocument, i, splitSettings.PagesPerDocument);
 
-                        i += viewModel.PagesPerDocument - 1;
+                        i += splitSettings.PagesPerDocument - 1;
 
-                        string newFileName = Path.Combine(path, viewModel.Prefix + title + ".pdf");
+                        string newFileName = Path.Combine(path, splitSettings.Prefix + title + ".pdf");
 
                         if (title.Length < 2 || await FileAccessService.FileExistsAsync(newFileName, theMessenger))
                         {
@@ -122,7 +119,7 @@ namespace Scans_Mover.Services
                 {
                     for (int i = 0; i < splitted.Length; i++)
                     {
-                        if (splitted[i].All(x => char.IsLetterOrDigit(x)) && int.TryParse(splitted[i], out int result))
+                        if (splitted[i].All(x => char.IsDigit(x)) && int.TryParse(splitted[i], out int result))
                         {
                             if ((result - numMin < (tolerance + 1)) && (result - numMin > (-1 * (tolerance + 1))))
                             {

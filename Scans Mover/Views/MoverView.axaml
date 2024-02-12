@@ -127,9 +127,11 @@
                             Content="Move Files" />
 
                     </Grid>
+
                 </TabItem>
 
                 <TabItem Header="Details">
+
                     <Grid
                         Margin="0,5,0,0"
                         HorizontalAlignment="Center"
@@ -207,9 +209,11 @@
                             Value="{Binding Tolerance}" />
 
                     </Grid>
+
                 </TabItem>
 
                 <TabItem Header="Locations">
+
                     <Grid
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
@@ -306,6 +310,7 @@
                             Content="Change Location" />
 
                     </Grid>
+
                 </TabItem>
 
             </TabControl>

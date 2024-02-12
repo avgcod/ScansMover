@@ -1,0 +1,46 @@
+<UserControl
+    x:Class="Scans_Mover.Components.FileMovingTab"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="using:Scans_Mover.ViewModels"
+    d:DesignHeight="175"
+    d:DesignWidth="250"
+    x:DataType="vm:FileMovingTabViewModel"
+    mc:Ignorable="d">
+    <Grid
+        Margin="0,20,0,0"
+        HorizontalAlignment="Center"
+        RowDefinitions="auto,auto,auto,auto,auto,auto">
+
+
+        <Button
+            Grid.Row="0"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Command="{Binding BatchSplitCommand}"
+            Content="Batch Split" />
+
+        <TextBlock
+            Grid.Row="1"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            IsVisible="{Binding DocumentHasDate}"
+            Text="Scan Date" />
+
+        <CalendarDatePicker
+            Grid.Row="2"
+            HorizontalAlignment="Center"
+            IsVisible="{Binding DocumentHasDate}"
+            SelectedDate="{Binding SpecifiedDate}" />
+
+        <Button
+            Grid.Row="5"
+            Margin="0,5,0,0"
+            HorizontalAlignment="Center"
+            Command="{Binding MoveDeliveriesCommand}"
+            Content="Move Files" />
+
+    </Grid>
+</UserControl>

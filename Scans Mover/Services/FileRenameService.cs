@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Messaging;
 using Scans_Mover.Models;
 using Scans_Mover.ViewModels;
 using Scans_Mover.Views;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -10,14 +11,24 @@ using System.Threading.Tasks;
 
 namespace Scans_Mover.Services
 {
-    public static class FileRenameService
+    public class FileRenameService : IRecipient<RenameMessage>
     {
-        private static async Task<bool> RenamePDFAsync(string fileName, string newName, string prefix, IMessenger theMessenger)
+        private readonly IMessenger _theMessenger;
+        private ScanStatus _currentScanStatus = ScanStatus.OK;
+        private string _currentScanNewFileName = string.Empty;
+
+        public FileRenameService(IMessenger theMessenger)
+        {
+            _theMessenger = theMessenger;
+            theMessenger.RegisterAll(this);
+        }
+
+        private async Task<bool> RenamePDFAsync(string fileName, string newName, string prefix)
         {
             string directoryName = Path.GetDirectoryName(fileName) ?? string.Empty;
             if (!string.IsNullOrWhiteSpace(directoryName))
             {
-                return await FileAccessService.RenameFileAsync(fileName, Path.Combine(directoryName, prefix + newName + ".pdf"), theMessenger);
+                return await FileAccessService.RenameFileAsync(fileName, Path.Combine(directoryName, prefix + newName + ".pdf"), _theMessenger);
             }
             else
             {
@@ -25,8 +36,8 @@ namespace Scans_Mover.Services
             }
         }
 
-        public static async Task RenamePDFsAsync(IEnumerable<string> pdfsToRename, MoverViewModel viewModel, IMessenger theMessenger, Window currentWindow)
-        {
+        public async Task RenamePDFsAsync(IEnumerable<string> pdfsToRename, RenameSettings renameSettings, Window currentWindow)
+        {           
             if (pdfsToRename.Any())
             {
                 FileRenameView renameView;
@@ -34,21 +45,33 @@ namespace Scans_Mover.Services
                 foreach (string fileName in pdfsToRename)
                 {
                     renameView = new FileRenameView();
-                    frvModel =new FileRenameViewModel(renameView, fileName, viewModel.SelectedScanType,
-                        viewModel.DocumentMinimum, viewModel.Prefix, theMessenger);
+                    frvModel =new FileRenameViewModel(renameView, fileName, renameSettings.SelectedScanType,
+                        renameSettings.DocumentMinimum, renameSettings.Prefix, _theMessenger);
                     renameView.DataContext = frvModel;
-                    frvModel.IsActive = true;
                     await renameView.ShowDialog(currentWindow);
                     frvModel.IsActive = false;
-                    if (viewModel.CurrentScanStatus == ScanStatus.OK)
+                    if (_currentScanStatus == ScanStatus.OK)
                     {
-                        await RenamePDFAsync(fileName, viewModel.CurrentScanNewFileName, viewModel.Prefix, theMessenger);
+                        await RenamePDFAsync(fileName, _currentScanNewFileName, renameSettings.Prefix);
                     }
-                    else if (viewModel.CurrentScanStatus == ScanStatus.Cancel)
+                    else if (_currentScanStatus == ScanStatus.Cancel)
                     {
                         break;
                     }
                 }
+            }
+        }
+
+        public void Receive(RenameMessage message)
+        {
+            _currentScanStatus = message.ScanStatus;
+            if (_currentScanStatus == ScanStatus.OK)
+            {
+                _currentScanNewFileName = message.NewFileName;
+            }
+            else if (_currentScanStatus == ScanStatus.Skip)
+            {
+                _theMessenger.Send(new SkippedFileMessage());
             }
         }
     }

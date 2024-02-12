@@ -10,7 +10,6 @@ namespace Scans_Mover
 {
     public partial class App : Application
     {
-        MoverViewModel? mvModel;
         public override void Initialize()
         {
             AvaloniaXamlLoader.Load(this);
@@ -21,19 +20,10 @@ namespace Scans_Mover
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 desktop.MainWindow = new MoverView();
-                desktop.MainWindow.Closing += MainWindow_Closing;
-                mvModel = new MoverViewModel(desktop.MainWindow, StrongReferenceMessenger.Default, "settings.json");
-                mvModel.IsActive = true;
-                desktop.MainWindow.DataContext = mvModel;
+                desktop.MainWindow.DataContext = new MoverViewModel(desktop.MainWindow, StrongReferenceMessenger.Default, new FileRenameService(StrongReferenceMessenger.Default), "settings.json");
             }
 
             base.OnFrameworkInitializationCompleted();
-
-        }
-
-        private void MainWindow_Closing(object? sender, Avalonia.Controls.WindowClosingEventArgs e)
-        {
-            mvModel!.IsActive = false;
         }
     }
 }

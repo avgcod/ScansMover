@@ -1,25 +1,24 @@
-﻿using System;
-using Avalonia.Controls;
-using Scans_Mover.Models;
-using Scans_Mover.Services;
-using System.ComponentModel;
-using System.Threading.Tasks;
+﻿using Avalonia.Controls;
+using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Avalonia.Platform.Storage;
 using CommunityToolkit.Mvvm.Messaging;
-using System.Collections.Generic;
+using Scans_Mover.Models;
+using Scans_Mover.Services;
 using Scans_Mover.Views;
+using System;
+using System.Collections.Generic;
 using System.Linq;
-using UglyToad.PdfPig.Fonts.TrueType.Names;
+using System.Threading.Tasks;
 
 namespace Scans_Mover.ViewModels
 {
-    public partial class MoverViewModel(Window parentWindow, IMessenger theMessenger, string settingsFile) : ObservableRecipient(theMessenger), IRecipient<RenameMessage>, IRecipient<MoveLogMessage>, IRecipient<PagesPerDocumentErrorMessage>, IRecipient<OperationErrorMessage>
+    public partial class MoverViewModel : ObservableRecipient,IRecipient<SkippedFileMessage>, IRecipient<MoveLogMessage>, IRecipient<PagesPerDocumentErrorMessage>, IRecipient<OperationErrorMessage>
     {
         #region Variables
-        private readonly string _settingsFile = settingsFile;
-        private readonly Window _parentWindow = parentWindow;
+        private readonly string _settingsFile;
+        private readonly Window _parentWindow;
+        private readonly FileRenameService _fileRenameService;
         #endregion
 
         #region Properties
@@ -61,11 +60,12 @@ namespace Scans_Mover.ViewModels
         private bool _documentHasDate = false;
         [ObservableProperty]
         private LocationType _locationType = LocationType.Scans;
+
         [ObservableProperty]
-        [NotifyPropertyChangedFor(nameof(PrefixExample))]
         [NotifyCanExecuteChangedFor(nameof(BatchSplitCommand))]
         public string _prefix = string.Empty;
-        public string PrefixExample => Prefix + " batch";
+        [ObservableProperty]
+        public string _prefixExample = string.Empty;
         [ObservableProperty]
         private DateTime _specifiedDate = DateTime.Now.AddDays(-1);
         public bool HasSkippedFiles { get; set; } = false;
@@ -74,6 +74,21 @@ namespace Scans_Mover.ViewModels
         private string _processingText = "Processing. Please wait.";
 
         #endregion
+
+        public MoverViewModel(Window parentWindow, IMessenger theMessenger, FileRenameService fileRenameService, string settingsFile) : base(theMessenger)
+        {
+            _settingsFile = settingsFile;
+            _parentWindow = parentWindow;
+            _fileRenameService = fileRenameService;
+            IsActive = true;
+
+            _parentWindow.Closing += ParentWindow_Closing;
+        }
+
+        private void ParentWindow_Closing(object? sender, WindowClosingEventArgs e)
+        {
+            IsActive = false;
+        }
 
         #region Commands
         public bool CanSplit => !Busy && !string.IsNullOrEmpty(MainFolder) && !string.IsNullOrEmpty(Prefix);
@@ -113,6 +128,7 @@ namespace Scans_Mover.ViewModels
                 }
             }
         }
+
         [RelayCommand]
         public void SplitTypeChecked(object? parameter)
         {
@@ -133,6 +149,7 @@ namespace Scans_Mover.ViewModels
                 ChangePagesPerDocument();
             }
         }
+
         [RelayCommand]
         public void LocationChecked(object? parameter)
         {
@@ -142,14 +159,34 @@ namespace Scans_Mover.ViewModels
                 LocationType = (LocationType)Enum.Parse(typeof(LocationType), typeText);
             }
         }
+
         [RelayCommand(CanExecute = nameof(CanSplit))]
         public async Task BatchSplit()
         {
             Busy = true;
             HasSkippedFiles = false;
 
-            IEnumerable<string> pdfFileNames = await PDFSplitterService.SplitBatchPDFsAsync(this, Messenger);
-            await FileRenameService.RenamePDFsAsync(pdfFileNames, this, Messenger, _parentWindow);
+            SplitSettings splitSettings = new()
+            {
+                DocumentHasMinimum = DocumentHasMinimum,
+                DocumentMinimum = DocumentMinimum,
+                MainFolder = MainFolder,
+                PagesPerDocument = PagesPerDocument,
+                Prefix = Prefix,
+                SelectedScanType = SelectedScanType,
+                Tolerance = Tolerance
+            };
+
+            IEnumerable<string> pdfFileNames = await SplitterService.SplitBatchDocumentsAsync(splitSettings, Messenger);
+
+            RenameSettings renameSettings = new()
+            {
+                DocumentMinimum = DocumentMinimum,
+                Prefix = Prefix,
+                SelectedScanType = SelectedScanType
+            };
+
+            await _fileRenameService.RenamePDFsAsync(pdfFileNames, renameSettings, _parentWindow);
 
             if (HasSkippedFiles)
             {
@@ -162,6 +199,7 @@ namespace Scans_Mover.ViewModels
 
             Busy = false;
         }
+
         [RelayCommand(CanExecute = nameof(CanMove))]
         public async Task MoveDeliveries()
         {
@@ -368,6 +406,8 @@ namespace Scans_Mover.ViewModels
             {
                 Prefix = Settings.ServicePrefix;
             }
+
+            PrefixExample = Prefix + " batch";
         }
 
         /// <summary>
@@ -400,6 +440,7 @@ namespace Scans_Mover.ViewModels
                 ServiceFolder = Settings.ServiceFolder;
                 Tolerance = Settings.Tolerance;
                 Prefix = Settings.DeliveriesPrefix;
+                PrefixExample = Prefix + " batch";
             }
             else
             {
@@ -422,7 +463,7 @@ namespace Scans_Mover.ViewModels
         private async Task HandleOperationErrorMessage(OperationErrorMessage message)
         {
             ErrorMessageBoxView emboxView = new();
-            ErrorMessageBoxViewModel embvModel = new (emboxView, Messenger);
+            ErrorMessageBoxViewModel embvModel = new(emboxView, Messenger);
             emboxView.DataContext = embvModel;
             embvModel.IsActive = true;
             Messenger.Send(new OperationErrorInfoMessage(message.ErrorType, message.ErrorMessage));
@@ -434,17 +475,9 @@ namespace Scans_Mover.ViewModels
         /// Processes RenameMessage messages.
         /// </summary>
         /// <param name="message">The RenameMessage to process.</param>
-        private void HandleRenameMessage(RenameMessage message)
+        private void HandleSkippedFileMessageMessage(SkippedFileMessage message)
         {
-            CurrentScanStatus = message.ScanStatus;
-            if (CurrentScanStatus == ScanStatus.OK)
-            {
-                CurrentScanNewFileName = message.NewFileName;
-            }
-            else if (CurrentScanStatus == ScanStatus.Skip)
-            {
-                HasSkippedFiles = true;
-            }
+            HasSkippedFiles = true;
         }
 
         /// <summary>
@@ -471,9 +504,9 @@ namespace Scans_Mover.ViewModels
         /// Handles RenameMessages that are sent.
         /// </summary>
         /// <param name="message">The RenameMessage that was sent.</param>
-        public void Receive(RenameMessage message)
+        public void Receive(SkippedFileMessage message)
         {
-            HandleRenameMessage(message);
+            HandleSkippedFileMessageMessage(message);
         }
 
         /// <summary>
@@ -512,12 +545,17 @@ namespace Scans_Mover.ViewModels
         private async Task DisplayMessageBoxAsync(string message)
         {
             MessageBoxView mboxView = new();
-            MessageBoxViewModel mbvModel = new (mboxView, Messenger);
+            MessageBoxViewModel mbvModel = new(mboxView, Messenger);
             mboxView.DataContext = mbvModel;
             mbvModel.IsActive = true;
             Messenger.Send(new NotificationMessage(message));
             await mboxView.ShowDialog(_parentWindow);
             mbvModel.IsActive = false;
+        }
+
+        partial void OnDocumentMinimumChanged(double value)
+        {
+            SaveDocumentMinimum();
         }
     }
 }

@@ -63,6 +63,8 @@ namespace Scans_Mover.ViewModels
             CurrentType = tempType;
             TypeText = CurrentType.ToString();
             _prefixText = prefixText;
+
+            IsActive = true;
         }
 
         private void SetNameLength(double numLength)

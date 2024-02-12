@@ -26,6 +26,7 @@ namespace Scans_Mover.Services
         /// Reads settings information from a json file asynchronously.
         /// </summary>
         /// <param name="fileName">Json file to load information from.</param>
+        /// <param name="theMessenger">The messenger to use to send an OperationErrorMessage with in the event of an error.</param>
         /// <returns>Settings object</returns>
         public static async Task<Settings> LoadSettingsAsync(string fileName, IMessenger theMessenger)
         {
@@ -50,6 +51,7 @@ namespace Scans_Mover.Services
         /// Loads a PDF document asynchronously.
         /// </summary>
         /// <param name="fileName">PDF file to load.</param>
+        /// <param name="theMessenger">The messenger to use to send an OperationErrorMessage with in the event of an error.</param>
         /// <returns>PDF document.</returns>
         public static async Task<PdfDocument?> LoadPDFDocumentAsync(string fileName, IMessenger theMessenger)
         {
@@ -70,14 +72,14 @@ namespace Scans_Mover.Services
         /// </summary>
         /// <param name="information">Settings to save.</param>
         /// <param name="fileName">File name to save to.</param>
+        /// <param name="theMessenger">The messenger to use to send an OperationErrorMessage with in the event of an error.</param>
         /// <returns>If the operation succeeded.</returns>
-        /// <exception cref="Exception">Error trying to save.</exception>
         public static async Task SaveSettingsAsync(Settings information, string fileName, IMessenger theMessenger)
         {
             try
             {
-                string jsonText = JsonSerializer.Serialize(information, options);
-                await File.WriteAllTextAsync(fileName, jsonText);
+                await using Stream fileStream = File.OpenWrite(fileName);
+                await JsonSerializer.SerializeAsync(fileStream,information, options);
             }
             catch (Exception ex)
             {
@@ -90,8 +92,8 @@ namespace Scans_Mover.Services
         /// </summary>
         /// <param name="information">List of moved information</param>
         /// <param name="fileName">Text file to save to.</param>
+        /// <param name="theMessenger">The messenger to use to send an OperationErrorMessage with in the event of an error.</param>
         /// <returns>If the operation succeeded.</returns>
-        /// <exception cref="Exception"></exception>
         public static async Task SaveLogAsync(IEnumerable<string> information, string fileName, IMessenger theMessenger)
         {
             try
@@ -112,9 +114,9 @@ namespace Scans_Mover.Services
         /// Saves a PDF document asynchronously.
         /// </summary>
         /// <param name="fileName">PDF file to save to.</param>
-        /// <param name="thePDF">The PDF document to save.</param>
+        /// <param name="thePDF">The byte[] representing the PDF document to save.</param>
+        /// <param name="theMessenger">The messenger to use to send an OperationErrorMessage with in the event of an error.</param>
         /// <returns>If the operation succeeded.</returns>
-        /// <exception cref="Exception">Error saving.</exception>
         public static async Task SavePDFDocumentAsync(string fileName, byte[] thePDF, IMessenger theMessenger)
         {
             if (!File.Exists(fileName))
@@ -137,6 +139,7 @@ namespace Scans_Mover.Services
         /// </summary>
         /// <param name="oldFileName">Old file name.</param>
         /// <param name="newFileName">New file name.</param>
+        /// <param name="theMessenger">The messenger to use to send an OperationErrorMessage with in the event of an error.</param>
         /// <returns>If the operation succeeded.</returns>
         public static async Task<bool> RenameFileAsync(string oldFileName, string newFileName, IMessenger theMessenger)
         {
@@ -147,6 +150,7 @@ namespace Scans_Mover.Services
         /// Returns the names of all subdirectories in a folder asynchronously.
         /// </summary>
         /// <param name="rootDirectory">Root directory to search.</param>
+        /// <param name="theMessenger">The messenger to use to send an OperationErrorMessage with in the event of an error.</param>
         /// <returns>List of subdirectory names found.</returns>
         public static async Task<IEnumerable<string>> GetSubDirectoriesAsync(string rootDirectory, IMessenger theMessenger)
         {
@@ -157,7 +161,7 @@ namespace Scans_Mover.Services
             catch (Exception ex)
             {
                 theMessenger.Send<OperationErrorMessage>(new OperationErrorMessage(ex.GetType().Name, ex.Message));
-                return new List<string>();
+                return Enumerable.Empty<string>();
             }
         }
 
@@ -165,6 +169,7 @@ namespace Scans_Mover.Services
         /// Gets all files in a directory asynchronously.
         /// </summary>
         /// <param name="rootDirectory">Root directory to search.</param>
+        /// <param name="theMessenger">The messenger to use to send an OperationErrorMessage with in the event of an error.</param>
         /// <returns>List of files found.</returns>
         public static async Task<IEnumerable<FileInfo>> GetFilesAsync(string rootDirectory, IMessenger theMessenger)
         {
@@ -175,7 +180,7 @@ namespace Scans_Mover.Services
             catch (Exception ex)
             {
                 theMessenger.Send<OperationErrorMessage>(new OperationErrorMessage(ex.GetType().Name, ex.Message));
-                return new List<FileInfo>();
+                return Enumerable.Empty<FileInfo>();
             }
         }
 
@@ -183,6 +188,7 @@ namespace Scans_Mover.Services
         /// Checks if a directory exists.
         /// </summary>
         /// <param name="directoryLocation">The directory to check.</param>
+        /// <param name="theMessenger">The messenger to use to send an OperationErrorMessage with in the event of an error.</param>
         /// <returns>If the directory exists.</returns>
         public static async Task<bool> DirectoryExistsAsync(string directoryLocation, IMessenger theMessenger)
         {
@@ -201,6 +207,7 @@ namespace Scans_Mover.Services
         /// Checks if a file exists.
         /// </summary>
         /// <param name="fileName">The file to check.</param>
+        /// <param name="theMessenger">The messenger to use to send an OperationErrorMessage with in the event of an error.</param>
         /// <returns>If the file exists.</returns>
         public static async Task<bool> FileExistsAsync(string fileName, IMessenger theMessenger)
         {
@@ -220,8 +227,8 @@ namespace Scans_Mover.Services
         /// </summary>
         /// <param name="source">Original file location.</param>
         /// <param name="destination">New file location.</param>
+        /// <param name="theMessenger">The messenger to use to send an OperationErrorMessage with in the event of an error.</param>
         /// <returns>If the operation succeeded.</returns>
-        /// <exception cref="Exception">Error moving file.</exception>
         public static async Task<bool> MoveFileAsync(string source, string destination, IMessenger theMessenger)
         {
             try
@@ -247,6 +254,8 @@ namespace Scans_Mover.Services
         /// Opens a file using the default application asynchronously.
         /// </summary>
         /// <param name="fileName">The file to open.</param>
+        /// <param name="theMessenger">The messenger to use to send an OperationErrorMessage with in the event of an error.</param>
+        /// <returns>Task</returns>
         public static async Task LoadDefaultApplicationAsync(string fileName, IMessenger theMessenger)
         {
             try
@@ -290,8 +299,9 @@ namespace Scans_Mover.Services
         /// <summary>
         /// Opens a folder chooser dialog for the user to select the desired folder.
         /// </summary>
-        /// <param name="_currentWindow">The current window.</param>
-        /// <returns>The selected folder.</returns>
+        /// <param name="_currentWindow">The current window of the application.</param>
+        /// <param name="theMessenger">The messenger to use to send an OperationErrorMessage with in the event of an error.</param>
+        /// <returns>The selected IStorageFolder or null if there was an error.</returns>
         public static async Task<IStorageFolder?> ChooseLocationAsync(Window _currentWindow, IMessenger theMessenger)
         {
             try
