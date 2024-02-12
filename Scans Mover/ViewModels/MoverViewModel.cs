@@ -207,7 +207,16 @@ namespace Scans_Mover.ViewModels
 
             FilesMoved = false;
 
-            IEnumerable<string> filesNeedingFolders = await DocumentMoverService.MoveToFolderAsync(this, Messenger);
+            MoveSettings moveSettings = new MoveSettings()
+            {
+                Date = DateOnly.FromDateTime(SpecifiedDate),
+                MainFolder = Settings.MainFolder,
+                Prefix = Prefix,
+                SelectedScanType = SelectedScanType,
+                RootDestination = GetRootDestination()
+            };
+
+            IEnumerable<string> filesNeedingFolders = await DocumentMoverService.MoveToFolderAsync(moveSettings, Messenger);
 
             if (FilesMoved)
             {
@@ -241,6 +250,25 @@ namespace Scans_Mover.ViewModels
             Messenger.UnregisterAll(this);
             await SaveSettingsAsync();
             base.OnDeactivated();
+        }
+
+        private string GetRootDestination()
+        {
+            switch (SelectedScanType)
+            {
+                case ScanType.Delivery:
+                    return Settings.DeliveriesFolder;
+                case ScanType.RMA:
+                    return Settings.RMAsFolder;
+                case ScanType.Shipping:
+                    return Settings.ShippingLogsFolder;
+                case ScanType.PO:
+                    return Settings.DeliveriesFolder;
+                case ScanType.Service:
+                    return Settings.ServiceFolder;
+                default:
+                    throw new ArgumentException();
+            }
         }
 
         /// <summary>
@@ -472,10 +500,9 @@ namespace Scans_Mover.ViewModels
         }
 
         /// <summary>
-        /// Processes RenameMessage messages.
+        /// Set HasSkippedFiles to true.
         /// </summary>
-        /// <param name="message">The RenameMessage to process.</param>
-        private void HandleSkippedFileMessageMessage(SkippedFileMessage message)
+        private void HandleSkippedFileMessageMessage()
         {
             HasSkippedFiles = true;
         }
@@ -506,7 +533,7 @@ namespace Scans_Mover.ViewModels
         /// <param name="message">The RenameMessage that was sent.</param>
         public void Receive(SkippedFileMessage message)
         {
-            HandleSkippedFileMessageMessage(message);
+            HandleSkippedFileMessageMessage();
         }
 
         /// <summary>
@@ -553,6 +580,10 @@ namespace Scans_Mover.ViewModels
             mbvModel.IsActive = false;
         }
 
+        /// <summary>
+        /// Handle when the DocumentMinium has changed.
+        /// </summary>
+        /// <param name="value">The new value for DocumentMinium.</param>
         partial void OnDocumentMinimumChanged(double value)
         {
             SaveDocumentMinimum();

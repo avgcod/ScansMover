@@ -37,7 +37,7 @@ namespace Scans_Mover.Services
         }
 
         public async Task RenamePDFsAsync(IEnumerable<string> pdfsToRename, RenameSettings renameSettings, Window currentWindow)
-        {           
+        {
             if (pdfsToRename.Any())
             {
                 FileRenameView renameView;
