@@ -5,8 +5,6 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:vm="using:Scans_Mover.ViewModels"
-    d:DesignHeight="175"
-    d:DesignWidth="250"
     x:DataType="vm:FileMovingTabViewModel"
     mc:Ignorable="d">
     <Grid

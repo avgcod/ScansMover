@@ -18,7 +18,6 @@ namespace Scans_Mover
                 {
                     return (Control)Activator.CreateInstance(type)!;
                 }
-                
             }
 
             return new TextBlock { Text = "Not Found: " + name };

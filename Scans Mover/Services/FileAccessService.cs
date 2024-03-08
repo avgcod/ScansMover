@@ -161,7 +161,7 @@ namespace Scans_Mover.Services
             catch (Exception ex)
             {
                 theMessenger.Send<OperationErrorMessage>(new OperationErrorMessage(ex.GetType().Name, ex.Message));
-                return Enumerable.Empty<string>();
+                return [];
             }
         }
 
@@ -180,7 +180,7 @@ namespace Scans_Mover.Services
             catch (Exception ex)
             {
                 theMessenger.Send<OperationErrorMessage>(new OperationErrorMessage(ex.GetType().Name, ex.Message));
-                return Enumerable.Empty<FileInfo>();
+                return [];
             }
         }
 

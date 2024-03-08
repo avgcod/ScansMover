@@ -3,18 +3,31 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Scans_Mover.Models;
+using Scans_Mover.Views;
 
 namespace Scans_Mover.ViewModels
 {
-    public partial class ErrorMessageBoxViewModel(Window theWindow, IMessenger theMessenger) : ViewModelBase(theMessenger), IRecipient<OperationErrorInfoMessage>
+    public partial class ErrorMessageBoxViewModel : ViewModelBase, IRecipient<OperationErrorInfoMessage>
     {
-        private readonly Window _currentWindow = theWindow;
+        private readonly Window _currentWindow;
 
         [ObservableProperty]
         private string _errorType = string.Empty;
 
         [ObservableProperty]
         private string _errorMessage = string.Empty;
+
+        public ErrorMessageBoxViewModel(ErrorMessageBoxView theWindow, IMessenger theMessenger) : base(theMessenger)
+        {
+            _currentWindow = theWindow;
+            _currentWindow.Closing += CurrentWindow_Closing;
+            IsActive = true;
+        }
+
+        private void CurrentWindow_Closing(object? sender, WindowClosingEventArgs e)
+        {
+            IsActive = false;
+        }
 
         [RelayCommand]
         public void OK()

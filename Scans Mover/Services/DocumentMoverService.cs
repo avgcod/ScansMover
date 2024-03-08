@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.Messaging;
 using Scans_Mover.Models;
-using Scans_Mover.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -55,7 +54,7 @@ namespace Scans_Mover.Services
             }
             else
             {
-                noFoldersFound.Add("Folder does not exist for " + moveSettings.SelectedScanType.ToString() + "s");
+                noFoldersFound.Add($"Folder does not exist for {moveSettings.SelectedScanType} s");
             }
 
             if (moveLog.Count > 0)

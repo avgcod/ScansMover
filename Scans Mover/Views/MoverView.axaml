@@ -91,7 +91,8 @@
 
             <TabControl Grid.Column="1" HorizontalAlignment="Center">
 
-                <TabItem Header="File Moving">
+                <TabItem
+                    Header="File Moving">
 
                     <Grid
                         Margin="0,20,0,0"
@@ -130,14 +131,14 @@
 
                 </TabItem>
 
-                <TabItem Header="Details">
+                <TabItem
+                    Header="Details">
 
                     <Grid
                         Margin="0,5,0,0"
                         HorizontalAlignment="Center"
                         ColumnDefinitions="auto,auto,auto,auto,auto"
                         RowDefinitions="auto,auto,auto,auto,auto">
-
                         <TextBlock
                             Grid.Row="0"
                             Grid.Column="0"
@@ -209,10 +210,10 @@
                             Value="{Binding Tolerance}" />
 
                     </Grid>
-
                 </TabItem>
 
-                <TabItem Header="Locations">
+                <TabItem
+                    Header="Locations">
 
                     <Grid
                         HorizontalAlignment="Center"
