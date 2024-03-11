@@ -7,6 +7,9 @@ using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
 using CommunityToolkit.Mvvm.Collections;
+using Avalonia.Media.Imaging;
+using PDFtoImage;
+using System.IO;
 
 namespace Scans_Mover.ViewModels
 {
@@ -52,6 +55,9 @@ namespace Scans_Mover.ViewModels
 
         [ObservableProperty]
         private string _watermark = string.Empty;
+
+        [ObservableProperty]
+        private Bitmap? pdfImage;
         #endregion
 
         public FileRenameViewModel(Window currentWindow, string fileName, ScanType tempType, double numLength, string prefixText, IMessenger theMessenger) : base(theMessenger)
@@ -146,8 +152,12 @@ namespace Scans_Mover.ViewModels
 
         protected override async void OnActivated()
         {
-            await FileAccessService.LoadDefaultApplicationAsync(_fileName, Messenger);
-            _currentWindow.FindControl<TextBox>("tbxFileName")?.Focus();
+            //await FileAccessService.LoadDefaultApplicationAsync(_fileName, Messenger);
+            await using FileStream pdfStream = File.OpenRead(_fileName);
+            await using MemoryStream imageStream = new ();
+            Conversion.SaveJpeg(imageStream, pdfStream);
+            imageStream.Position = 0;
+            PdfImage = new Bitmap(imageStream);
 
             if (CurrentType == ScanType.Service)
             {
@@ -156,6 +166,8 @@ namespace Scans_Mover.ViewModels
             }
 
             SetNameLength(_numLength);
+
+            _currentWindow.FindControl<TextBox>("tbxFileName")?.Focus();
 
             base.OnActivated();
         }

@@ -44,9 +44,10 @@ namespace Scans_Mover.Services
                 foreach (string fileName in pdfsToRename)
                 {
                     renameView = new FileRenameView();
-                    frvModel =new FileRenameViewModel(renameView, fileName, renameSettings.SelectedScanType,
+                    frvModel = new FileRenameViewModel(renameView, fileName, renameSettings.SelectedScanType,
                         renameSettings.DocumentMinimum, renameSettings.Prefix, _theMessenger);
                     renameView.DataContext = frvModel;
+                    renameView.SizeToContent = SizeToContent.WidthAndHeight;
                     await renameView.ShowDialog(currentWindow);
                     frvModel.IsActive = false;
                     if (_currentScanStatus == ScanStatus.OK)

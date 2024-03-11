@@ -6,12 +6,10 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:vm="using:Scans_Mover.ViewModels"
     Title="Rename File"
-    Width="325"
-    Height="145"
-    MinWidth="325"
-    MinHeight="145"
-    d:DesignHeight="145"
-    d:DesignWidth="325"
+    Width="680"
+    Height="940"
+    MinWidth="680"
+    MinHeight="940"
     x:DataType="vm:FileRenameViewModel"
     KeyboardNavigation.TabNavigation="Continue"
     WindowStartupLocation="CenterOwner"
@@ -19,9 +17,10 @@
 
     <Grid
         Margin="3"
+        HorizontalAlignment="Center"
         VerticalAlignment="Center"
         ColumnDefinitions="auto,auto,auto,auto"
-        RowDefinitions="auto,auto,auto,auto">
+        RowDefinitions="auto,auto,auto,auto,auto">
 
         <TextBlock
             Grid.Row="0"
@@ -100,6 +99,15 @@
             Command="{Binding CancelCommand}"
             Content="Cancel"
             TabIndex="4" />
+
+        <Image
+            Grid.Row="4"
+            Grid.Column="0"
+            Grid.ColumnSpan="4"
+            Width="600"
+            Height="800"
+            Source="{Binding PdfImage}"
+            Stretch="UniformToFill" />
 
     </Grid>
 </Window>
