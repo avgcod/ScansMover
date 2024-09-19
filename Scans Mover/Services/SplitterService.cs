@@ -9,7 +9,10 @@ using UglyToad.PdfPig.Content;
 using UglyToad.PdfPig.Writer;
 using UglyToad.PdfPig;
 using CommunityToolkit.Mvvm.Messaging;
+<<<<<<< HEAD
 using UglyToad.PdfPig.DocumentLayoutAnalysis.WordExtractor;
+=======
+>>>>>>> 7716852e9a1ecef6d84a6416867edfbbe897c9e6
 
 namespace Scans_Mover.Services
 {

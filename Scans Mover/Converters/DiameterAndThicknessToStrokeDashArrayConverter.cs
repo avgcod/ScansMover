@@ -20,7 +20,6 @@ namespace Scans_Mover.Converters
                 !double.TryParse(values[1]?.ToString(), out double thickness))
             {
                 return new AvaloniaList<double>(new[] {0.0});
-                //return 0;
             }
 
             double circumference = Math.PI * diameter;
