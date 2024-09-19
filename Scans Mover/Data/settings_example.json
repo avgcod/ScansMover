@@ -1,0 +1,20 @@
+{
+  "MainFolder": "\\\\MainFolder ",
+  "DeliveriesFolder": "\\\\MainFolder\\Deliveries",
+  "RMAsFolder": "\\\\MainFolder\\RMAs",
+  "ShippingLogsFolder": "\\\\MainFolder\\Shipping Logs",
+  "ServiceFolder": "\\\\MainFolder\\Service Calls",
+  "DeliveriesPrefix": "Delivery_",
+  "RMAsPrefix": "RMA_",
+  "POsPrefix": "Hard_Copy_PO_",
+  "ShippingLogsPrefix": "Shipping Log_",
+  "ServiceCallssPrefix": "Service Call_",
+  "DeliveriesPagesPerDocument": 1,
+  "RMAsPagesPerDocument": 1,
+  "ShippingLogsPagesPerDocument": 2,
+  "POsPagesPerDocument": 1,
+  "ServiceCallsPagesPerDocument": 1,
+  "Tolerance": 100,
+  "DeliveriesMinimum": 3053000,
+  "RMAsMinimum": 20400
+}

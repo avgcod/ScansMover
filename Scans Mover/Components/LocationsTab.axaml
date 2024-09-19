@@ -1,0 +1,106 @@
+<UserControl
+    x:Class="Scans_Mover.Components.LocationsTab"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="using:Scans_Mover.ViewModels"
+    x:DataType="vm:LocationsTabViewModel"
+    mc:Ignorable="d">
+    <Grid
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+        ColumnDefinitions="auto,*"
+        RowDefinitions="auto,auto,auto,auto,auto,auto">
+
+        <RadioButton
+            Grid.Row="0"
+            Grid.Column="0"
+            Command="{Binding LocationCheckedCommand}"
+            CommandParameter="Scans"
+            Content="Scans:"
+            GroupName="LocationsGroup"
+            IsChecked="True" />
+
+        <TextBox
+            Grid.Row="0"
+            Grid.Column="1"
+            IsReadOnly="True"
+            Text="{Binding MainFolder}" />
+
+        <RadioButton
+            Grid.Row="1"
+            Grid.Column="0"
+            VerticalAlignment="Center"
+            Command="{Binding LocationCheckedCommand}"
+            CommandParameter="Deliveries"
+            Content="Deliveries:"
+            GroupName="LocationsGroup" />
+
+        <TextBox
+            Grid.Row="1"
+            Grid.Column="1"
+            Margin="0,5,0,0"
+            IsReadOnly="True"
+            Text="{Binding DeliveriesFolder}" />
+
+        <RadioButton
+            Grid.Row="2"
+            Grid.Column="0"
+            VerticalAlignment="Center"
+            Command="{Binding LocationCheckedCommand}"
+            CommandParameter="Shipping"
+            Content="Shipping:"
+            GroupName="LocationsGroup" />
+
+        <TextBox
+            Grid.Row="2"
+            Grid.Column="1"
+            Margin="0,5,0,0"
+            IsReadOnly="True"
+            Text="{Binding ShippingLogsFolder}" />
+
+        <RadioButton
+            Grid.Row="3"
+            Grid.Column="0"
+            VerticalAlignment="Center"
+            Command="{Binding LocationCheckedCommand}"
+            CommandParameter="RMAs"
+            Content="RMAs:"
+            GroupName="LocationsGroup" />
+
+        <TextBox
+            Grid.Row="3"
+            Grid.Column="1"
+            Margin="0,5,0,0"
+            IsReadOnly="True"
+            Text="{Binding RMAsFolder}" />
+
+        <RadioButton
+            Grid.Row="4"
+            Grid.Column="0"
+            VerticalAlignment="Center"
+            Command="{Binding LocationCheckedCommand}"
+            CommandParameter="Service"
+            Content="Service:"
+            GroupName="LocationsGroup" />
+
+        <TextBox
+            Grid.Row="4"
+            Grid.Column="1"
+            MinWidth="200"
+            Margin="0,5,0,0"
+            IsReadOnly="True"
+            Text="{Binding ServiceFolder}" />
+
+        <Button
+            Grid.Row="5"
+            Grid.Column="0"
+            Grid.ColumnSpan="2"
+            Margin="0,5,0,0"
+            HorizontalAlignment="Center"
+            Command="{Binding ChangeLocationCommand}"
+            Content="Change Location" />
+
+    </Grid>
+</UserControl>

@@ -1,0 +1,113 @@
+<Window
+    x:Class="Scans_Mover.Views.FileRenameView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="using:Scans_Mover.ViewModels"
+    Title="Rename File"
+    Width="680"
+    Height="940"
+    MinWidth="680"
+    MinHeight="940"
+    x:DataType="vm:FileRenameViewModel"
+    KeyboardNavigation.TabNavigation="Continue"
+    WindowStartupLocation="CenterOwner"
+    mc:Ignorable="d">
+
+    <Grid
+        Margin="3"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+        ColumnDefinitions="auto,auto,auto,auto"
+        RowDefinitions="auto,auto,auto,auto,auto">
+
+        <TextBlock
+            Grid.Row="0"
+            Grid.Column="0"
+            Grid.ColumnSpan="4"
+            Margin="2,2,2,2"
+            HorizontalAlignment="Center"
+            Text="Please provide the naming information." />
+
+        <TextBlock
+            Grid.Row="1"
+            Grid.Column="0"
+            VerticalAlignment="Center"
+            Text="{Binding TypeText}" />
+
+        <TextBox
+            x:Name="tbxFileName"
+            Grid.Row="1"
+            Grid.Column="1"
+            HorizontalAlignment="Left"
+            Focusable="True"
+            TabIndex="0"
+            Text="{Binding NewFileName}"
+            Watermark="{Binding Watermark}" />
+
+        <TextBlock
+            Grid.Row="1"
+            Grid.Column="2"
+            Margin="0,0,5,0"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Center"
+            IsVisible="{Binding IsService}"
+            Text="Call" />
+
+        <TextBox
+            Grid.Row="1"
+            Grid.Column="3"
+            Focusable="True"
+            IsVisible="{Binding IsService}"
+            TabIndex="1"
+            Text="{Binding CallNum}" />
+
+        <TextBlock
+            Grid.Row="2"
+            Grid.Column="0"
+            Grid.ColumnSpan="4"
+            FontStyle="Italic"
+            FontWeight="Light"
+            Text="{Binding ExampleText}" />
+
+        <Button
+            Grid.Row="3"
+            Grid.Column="0"
+            Margin="2,2,2,2"
+            HorizontalAlignment="Left"
+            Command="{Binding RenameCommand}"
+            Content="Rename"
+            IsDefault="True"
+            TabIndex="2" />
+
+        <Button
+            Grid.Row="3"
+            Grid.Column="1"
+            Grid.ColumnSpan="2"
+            Margin="2,2,2,2"
+            HorizontalAlignment="Center"
+            Command="{Binding SkipCommand}"
+            Content="Skip"
+            TabIndex="3" />
+
+        <Button
+            Grid.Row="3"
+            Grid.Column="3"
+            Margin="2,2,2,2"
+            HorizontalAlignment="Right"
+            Command="{Binding CancelCommand}"
+            Content="Cancel"
+            TabIndex="4" />
+
+        <Image
+            Grid.Row="4"
+            Grid.Column="0"
+            Grid.ColumnSpan="4"
+            Width="600"
+            Height="800"
+            Source="{Binding PdfImage}"
+            Stretch="UniformToFill" />
+
+    </Grid>
+</Window>

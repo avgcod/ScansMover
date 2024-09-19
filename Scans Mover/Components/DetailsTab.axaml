@@ -1,0 +1,87 @@
+<UserControl
+    x:Class="Scans_Mover.Components.DetailsTab"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="using:Scans_Mover.ViewModels"
+    x:DataType="vm:DetailsTabViewModel"
+    mc:Ignorable="d">
+    <Grid
+        Margin="0,5,0,0"
+        HorizontalAlignment="Center"
+        ColumnDefinitions="auto,auto,auto,auto,auto"
+        RowDefinitions="auto,auto,auto,auto,auto">
+
+        <TextBlock
+            Grid.Row="0"
+            Grid.Column="0"
+            VerticalAlignment="Center"
+            Text="Prefix:" />
+
+        <TextBox
+            Grid.Row="0"
+            Grid.Column="1"
+            Grid.ColumnSpan="3"
+            MinWidth="200"
+            VerticalAlignment="Center"
+            Text="{Binding Prefix}" />
+
+        <TextBlock
+            Grid.Row="1"
+            Grid.Column="0"
+            VerticalAlignment="Center"
+            FontStyle="Italic"
+            Text="Example:" />
+
+        <TextBlock
+            Grid.Row="1"
+            Grid.Column="1"
+            Grid.ColumnSpan="3"
+            Margin="0,5,0,0"
+            VerticalAlignment="Center"
+            Text="{Binding PrefixExample}" />
+
+        <TextBlock
+            Grid.Row="2"
+            Grid.Column="0"
+            VerticalAlignment="Center"
+            Text="Pages Per:" />
+
+        <NumericUpDown
+            Grid.Row="2"
+            Grid.Column="1"
+            Margin="0,5,0,0"
+            Minimum="1"
+            Value="{Binding PagesPerDocument}" />
+
+        <TextBlock
+            Grid.Row="3"
+            Grid.Column="0"
+            VerticalAlignment="Center"
+            IsVisible="{Binding DocumentHasMinimum}"
+            Text="Minimum:" />
+
+        <NumericUpDown
+            Grid.Row="3"
+            Grid.Column="1"
+            Margin="0,5,0,0"
+            IsVisible="{Binding DocumentHasMinimum}"
+            Value="{Binding DocumentMinimum}" />
+
+        <TextBlock
+            Grid.Row="4"
+            Grid.Column="0"
+            VerticalAlignment="Center"
+            IsVisible="{Binding DocumentHasMinimum}"
+            Text="Tolerance:" />
+
+        <NumericUpDown
+            Grid.Row="4"
+            Grid.Column="1"
+            Margin="0,5,0,0"
+            IsVisible="{Binding DocumentHasMinimum}"
+            Value="{Binding Tolerance}" />
+
+    </Grid>
+</UserControl>

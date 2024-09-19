@@ -1,0 +1,36 @@
+<Window
+    x:Class="Scans_Mover.Views.MessageBoxView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="using:Scans_Mover.ViewModels"
+    Title="Notice"
+    Width="200"
+    Height="100"
+    MinWidth="200"
+    MinHeight="100"
+    x:DataType="vm:MessageBoxViewModel"
+    SystemDecorations="BorderOnly"
+    WindowStartupLocation="CenterOwner"
+    mc:Ignorable="d">
+
+    <StackPanel
+        Margin="5"
+        Orientation="Vertical"
+        Spacing="10">
+
+        <TextBlock
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Text="{Binding MessageText}" />
+
+        <Button
+            Margin="0,0,5,0"
+            HorizontalAlignment="Center"
+            HorizontalContentAlignment="Center"
+            Command="{Binding OKCommand}"
+            Content="OK" />
+
+    </StackPanel>
+</Window>
