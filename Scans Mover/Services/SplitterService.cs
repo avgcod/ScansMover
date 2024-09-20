@@ -23,7 +23,8 @@ namespace Scans_Mover.Services
         {
             List<string> pdfsToRename = [];
             IEnumerable<FileInfo> theFiles = await FileAccessService.GetFilesAsync(splitSettings.MainFolder, theMessenger);
-            theFiles = theFiles.Where(x => x.Name.Contains(splitSettings.Prefix.ToLower() + " batch", StringComparison.CurrentCultureIgnoreCase));
+            theFiles = theFiles.Where(x => x.Extension == ".pdf"
+                                        && x.Name.Contains(string.Concat(splitSettings.Prefix.ToLower()," batch"), StringComparison.CurrentCultureIgnoreCase));
             foreach (FileInfo theInfo in theFiles)
             {
                 pdfsToRename.AddRange(await SplitBatchDocumentAsync(theInfo.FullName, splitSettings, theMessenger));
@@ -50,8 +51,7 @@ namespace Scans_Mover.Services
                     {
                         if (splitSettings.DocumentHasMinimum)
                         {
-                            string pageText = await ExtractTextAsync(theDocument.GetPage(i + 1), splitSettings.SelectedScanType);
-                            title = await GetPageTitleAsync(pageText, splitSettings.DocumentMinimum, splitSettings.SelectedScanType, splitSettings.Tolerance);
+                            title = await GetPageTitleAsync(theDocument.GetPage(i + 1).GetWords(), splitSettings.DocumentMinimum, splitSettings.SelectedScanType, splitSettings.Tolerance);
                         }
 
                         byte[] outputDocument = await BuildDocumentAsync(theDocument, i, splitSettings.PagesPerDocument);
@@ -110,48 +110,28 @@ namespace Scans_Mover.Services
         /// </summary>
         /// <param name="pageText">Page text.</param>
         /// <returns>Cleaned page title or empty page title if the title does not meet the requirements.</returns>
-        private static async Task<string> GetPageTitleAsync(string pageText, double numMin, ScanType currentScanType, double tolerance)
+        private static async Task<string> GetPageTitleAsync(IEnumerable<Word> pageText, double numMin, ScanType currentScanType, double tolerance)
         {
             string title = string.Empty;
             if (currentScanType != ScanType.Shipping)
             {
-                string[] splitted = pageText.Split(' ');
                 await Task.Run(() =>
                 {
-                    for (int i = 0; i < splitted.Length; i++)
+                    foreach (Word word in pageText)
                     {
-                        if (splitted[i].All(x => char.IsDigit(x)) && int.TryParse(splitted[i], out int result))
+                        if (double.TryParse(word.Text, out double result))
                         {
                             if ((result - numMin < (tolerance + 1)) && (result - numMin > (-1 * (tolerance + 1))))
                             {
-                                title = splitted[i];
+                                title = word.Text;
                                 break;
                             }
                         }
                     }
-                });
+                });                
             }
 
             return title;
-        }
-
-        /// <summary>
-        /// Returns all the text on a PDF page as a string seperated by a space asynchronously.
-        /// </summary>
-        /// <param name="thePage">The PDF page to extract text from.</param>
-        /// <returns>The text of the page combined into one spring.</returns>
-        private static async Task<string> ExtractTextAsync(Page thePage, ScanType currentScanType)
-        {
-            string text = string.Empty;
-            if (currentScanType != ScanType.Shipping)
-            {
-                IEnumerable<Word> pageWords = await Task.Run(() => thePage.GetWords(NearestNeighbourWordExtractor.Instance));
-                foreach (Word word in pageWords)
-                {
-                    text += word.Text + " ";
-                }
-            }
-            return text;
         }
     }
 }
