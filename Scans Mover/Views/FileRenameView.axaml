@@ -107,7 +107,7 @@
             Width="600"
             Height="800"
             Source="{Binding PdfImage}"
-            Stretch="UniformToFill" />
+            Stretch="Uniform" />
 
     </Grid>
 </Window>

@@ -52,7 +52,7 @@ namespace Scans_Mover.Services
         /// </summary>
         /// <param name="fileName">PDF file to load.</param>
         /// <param name="theMessenger">The messenger to use to send an OperationErrorMessage with in the event of an error.</param>
-        /// <returns>PDF document.</returns>
+        /// <returns>The PDF document.</returns>
         public static async Task<PdfDocument?> LoadPDFDocumentAsync(string fileName, IMessenger theMessenger)
         {
             try
@@ -68,6 +68,28 @@ namespace Scans_Mover.Services
         }
 
         /// <summary>
+        /// Loads a file stream asynchronously.
+        /// </summary>
+        /// <param name="fileName">The file name to load the stream of.</param>
+        /// <param name="theMessenger">The messenger to use to send an OperationErrorMessage with in the event of an error.</param>
+        /// <returns>The file stream.</returns>
+        public static async Task<FileStream?> LoadFileStream(string fileName, IMessenger theMessenger)
+        {
+            if (File.Exists(fileName))
+            {
+                try
+                {
+                    return await Task.Run(() => File.Open(fileName, FileMode.Open));
+                }
+                catch (Exception ex)
+                {
+                    theMessenger.Send<OperationErrorMessage>(new OperationErrorMessage(ex.GetType().Name, ex.Message));
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
         /// Saves settings to a json file asynchronously.
         /// </summary>
         /// <param name="information">Settings to save.</param>
@@ -78,8 +100,8 @@ namespace Scans_Mover.Services
         {
             try
             {
-                await using Stream fileStream = File.OpenWrite(fileName);
-                await JsonSerializer.SerializeAsync(fileStream,information, options);
+                await using Stream fileStream = File.Create(fileName);
+                await JsonSerializer.SerializeAsync(fileStream, information, options);
             }
             catch (Exception ex)
             {
@@ -169,13 +191,14 @@ namespace Scans_Mover.Services
         /// Gets all files in a directory asynchronously.
         /// </summary>
         /// <param name="rootDirectory">Root directory to search.</param>
+        /// /// <param name="extension">The file extension.</param>
         /// <param name="theMessenger">The messenger to use to send an OperationErrorMessage with in the event of an error.</param>
         /// <returns>List of files found.</returns>
-        public static async Task<IEnumerable<FileInfo>> GetFilesAsync(string rootDirectory, IMessenger theMessenger)
+        public static async Task<IEnumerable<FileInfo>> GetFilesAsync(string rootDirectory, string extension, IMessenger theMessenger)
         {
             try
             {
-                return await Task.Run(() => new DirectoryInfo(rootDirectory).GetFiles());
+                return await Task.Run(() => new DirectoryInfo(rootDirectory).GetFiles(string.Concat("*",extension)));
             }
             catch (Exception ex)
             {

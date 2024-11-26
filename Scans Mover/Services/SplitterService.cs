@@ -22,9 +22,8 @@ namespace Scans_Mover.Services
         public static async Task<IEnumerable<string>> SplitBatchDocumentsAsync(SplitSettings splitSettings, IMessenger theMessenger)
         {
             List<string> pdfsToRename = [];
-            IEnumerable<FileInfo> theFiles = await FileAccessService.GetFilesAsync(splitSettings.MainFolder, theMessenger);
-            theFiles = theFiles.Where(x => x.Extension == ".pdf"
-                                        && x.Name.Contains(string.Concat(splitSettings.Prefix.ToLower()," batch"), StringComparison.CurrentCultureIgnoreCase));
+            IEnumerable<FileInfo> theFiles = await FileAccessService.GetFilesAsync(splitSettings.MainFolder, ".pdf", theMessenger);
+            theFiles = theFiles.Where(x => x.Name.Contains(string.Concat(splitSettings.Prefix.ToLower()," batch"), StringComparison.CurrentCultureIgnoreCase));
             foreach (FileInfo theInfo in theFiles)
             {
                 pdfsToRename.AddRange(await SplitBatchDocumentAsync(theInfo.FullName, splitSettings, theMessenger));

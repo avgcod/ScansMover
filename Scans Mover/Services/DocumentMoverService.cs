@@ -18,7 +18,7 @@ namespace Scans_Mover.Services
         public static async Task<IEnumerable<string>> MoveToFolderAsync(MoveSettings moveSettings, IMessenger theMessenger)
         {
             List<string> noFoldersFound = [];
-            IEnumerable<FileInfo> theFiles = await FileAccessService.GetFilesAsync(moveSettings.MainFolder, theMessenger);
+            IEnumerable<FileInfo> theFiles = await FileAccessService.GetFilesAsync(moveSettings.MainFolder, ".pdf", theMessenger);
             List<string> moveLog = [];
             theFiles = await Task.Run(() => theFiles.Where(x => x.Name.StartsWith(moveSettings.Prefix) && !x.Name.Contains("batch",StringComparison.OrdinalIgnoreCase)));
             //string rootDestination = GetRootDestination(moveSettings.SelectedScanType);

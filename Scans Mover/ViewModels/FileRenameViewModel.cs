@@ -153,21 +153,30 @@ namespace Scans_Mover.ViewModels
         protected override async void OnActivated()
         {
             //await FileAccessService.LoadDefaultApplicationAsync(_fileName, Messenger);
-            await using FileStream pdfStream = File.OpenRead(_fileName);
-            await using MemoryStream imageStream = new ();
-            Conversion.SaveJpeg(imageStream, pdfStream,Index.Start);
-            imageStream.Position = 0;
-            PdfImage = new Bitmap(imageStream);
-
-            if (CurrentType == ScanType.Service)
+            if(await FileAccessService.LoadFileStream(_fileName, Messenger) is FileStream pdfStream)
             {
-                IsService = true;
-                TypeText = "Delivery";
+                await using MemoryStream imageStream = new();
+                Conversion.SaveJpeg(imageStream, pdfStream, Index.Start, false);
+                imageStream.Position = 0;
+                PdfImage = new Bitmap(imageStream);
+                pdfStream.Close();
+                imageStream.Close();
+
+                if (CurrentType == ScanType.Service)
+                {
+                    IsService = true;
+                    TypeText = "Delivery";
+                }
+
+                SetNameLength(_numLength);
+
+                TextBox? fileNameBox = _currentWindow.FindControl<TextBox>("tbxFileName");
+                _currentWindow.FindControl<TextBox>("tbxFileName")?.Focus();
             }
-
-            SetNameLength(_numLength);
-
-            _currentWindow.FindControl<TextBox>("tbxFileName")?.Focus();
+            else
+            {
+                _currentWindow.Close();
+            }
 
             base.OnActivated();
         }
